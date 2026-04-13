@@ -74,19 +74,26 @@ class ProfilScreen extends StatelessWidget {
               const SizedBox(height: 32),
               // Menu items
               _MenuItem(
-                  icon: Icons.person_rounded, label: 'Edit Profil'),
+                  icon: Icons.person_rounded, label: 'Edit Profil', context: context),
               _MenuItem(
-                  icon: Icons.notifications_rounded, label: 'Notifikasi'),
+                  icon: Icons.notifications_rounded, label: 'Notifikasi', context: context),
               _MenuItem(
-                  icon: Icons.language_rounded, label: 'Bahasa'),
+                  icon: Icons.language_rounded, label: 'Bahasa', context: context),
               _MenuItem(
-                  icon: Icons.help_outline_rounded, label: 'Bantuan'),
+                  icon: Icons.help_outline_rounded, label: 'Bantuan', context: context),
               const SizedBox(height: 16),
               // Logout button
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Anda telah keluar dari aplikasi.', style: GoogleFonts.plusJakartaSans()),
+                        backgroundColor: const Color(0xFFDC2626),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.logout_rounded,
                       color: Color(0xFFDC2626)),
                   label: Text(
@@ -156,7 +163,8 @@ class _StatCard extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _MenuItem({required this.icon, required this.label});
+  final BuildContext context;
+  const _MenuItem({required this.icon, required this.label, required this.context});
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +201,15 @@ class _MenuItem extends StatelessWidget {
         ),
         trailing: const Icon(Icons.chevron_right_rounded,
             color: Color(0xFF64655C)),
-        onTap: () {},
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Membuka menu $label...', style: GoogleFonts.plusJakartaSans()),
+              backgroundColor: const Color(0xFF00743B),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
       ),
     );
   }

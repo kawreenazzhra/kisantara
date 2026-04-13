@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'membaca_cerita_screen.dart';
 
 class StoryModel {
   final String title;
@@ -8,6 +9,13 @@ class StoryModel {
   final String category;
   final Color categoryColor;
   final Color categoryTextColor;
+  
+  // Dynamic story content fields
+  final String readTime;
+  final String part1;
+  final String quote;
+  final String quoteAuthor;
+  final String part2;
 
   const StoryModel({
     required this.title,
@@ -16,33 +24,58 @@ class StoryModel {
     required this.category,
     this.categoryColor = const Color(0xFFFED023),
     this.categoryTextColor = const Color(0xFF594700),
+    required this.readTime,
+    required this.part1,
+    required this.quote,
+    required this.quoteAuthor,
+    required this.part2,
   });
 }
 
-final List<StoryModel> _stories = [
+final List<StoryModel> appStories = [
   StoryModel(
     title: 'Sangkuriang',
     subtitle: 'Gunung Tangkuban Perahu',
     imagePath: 'assets/images/sangkuriang.png',
     category: 'LEGENDA',
+    readTime: '6 min baca',
+    part1: 'Di sebuah hutan lebat, hiduplah seorang putri cantik bernama Dayang Sumbi dan putranya, Sangkuriang. Suatu hari, Sangkuriang tanpa sengaja membunuh Tumang, anjing kesayangan ibunya yang sebenarnya adalah ayah kandungnya sendiri.',
+    quote: '"Pergilah kau, anak durhaka! Jangan pernah kembali sampai kau mengerti kesalahanmu!"',
+    quoteAuthor: '— Dayang Sumbi',
+    part2: 'Bertahun-tahun berlalu, Sangkuriang kembali ke desanya dan tak mengenali ibunya yang masih tampak muda. Ia jatuh cinta pada Dayang Sumbi, yang kemudian memberinya syarat mustahil: membuat danau dan perahu dalam semalam.',
   ),
   StoryModel(
     title: 'Bawang Merah Bawang Putih',
     subtitle: 'Kisah Dua Saudara',
     imagePath: 'assets/images/bawang_merah.png',
     category: 'MITOS',
+    readTime: '4 min baca',
+    part1: 'Bawang Putih adalah gadis yang baik hati namun disiksa oleh ibu dan saudara tirinya, Bawang Merah. Ia harus mengerjakan semua pekerjaan rumah seorang diri tanpa pernah mengeluh.',
+    quote: '"Cepat cuci bajuku! Jangan bermalas-malasan, anak tak berguna!"',
+    quoteAuthor: '— Bawang Merah',
+    part2: 'Suatu ketika, selendang ibu Bawang Merah hanyut di sungai, mengantarkan Bawang Putih kepada seorang nenek sakti yang memberinya labu berisi emas permata sebagai balasan atas kebaikannya.',
   ),
   StoryModel(
     title: 'Timun Mas',
     subtitle: 'Gadis Timun Emas',
     imagePath: 'assets/images/timun_mas.png',
     category: 'FABEL',
+    readTime: '3 min baca',
+    part1: 'Di sebuah desa kecil, hiduplah seorang janda bernama Mbok Sirni. Ia hidup sebatang kara dan sangat mendambakan kehadiran seorang anak. Suatu hari, Buto Ijo mendengarnya berdoa.',
+    quote: '"Jangan takut, Mbok Sirni. Tanamlah biji ini, kau akan mendapatkan apa yang kau inginkan."',
+    quoteAuthor: '— Suara Gema Buto Ijo',
+    part2: 'Mbok Sirni menanam biji itu, dan tumbuhlah mentimun emas besar. Ketika dibelah, terdapat bayi cantik bernama Timun Mas. Namun, Buto Ijo kelak menagih janjinya untuk memakan anak itu.',
   ),
   StoryModel(
     title: 'Si Kancil',
     subtitle: 'Kancil dan Buaya',
     imagePath: 'assets/images/si_kancil.png',
     category: 'FABEL',
+    readTime: '2 min baca',
+    part1: 'Di suatu pagi yang cerah, udara terasa sangat segar karena semalam baru saja turun hujan. Si Kancil yang cerdik berjalan-jalan santai mencari makanan di tepi sungai yang sedang pasang.',
+    quote: '"Hai buaya, menepi sebentar! Aku punya pesan penting dari Raja Sulaiman untuk menghitung kalian!"',
+    quoteAuthor: '— Kancil yang cerdik',
+    part2: 'Buaya-buaya yang percaya pun berbaris rapi dari tepi satu ke tepi lainnya. Dengan cerdiknya, kancil melompat ke punggung buaya sambil berhitung, lalu berhasil melarikan diri menyeberang sungai.',
   ),
 ];
 
@@ -59,9 +92,9 @@ class _JelajahScreenState extends State<JelajahScreen> {
   int _selectedCategory = 0;
 
   List<StoryModel> get _filtered {
-    if (_selectedCategory == 0) return _stories;
+    if (_selectedCategory == 0) return appStories;
     final cat = _categories[_selectedCategory].toUpperCase();
-    return _stories.where((s) => s.category == cat).toList();
+    return appStories.where((s) => s.category == cat).toList();
   }
 
   @override
@@ -264,9 +297,18 @@ class _StoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MembacaCeritaScreen(story: story),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         // Image with category badge
         Stack(
           children: [
@@ -351,6 +393,7 @@ class _StoryCard extends StatelessWidget {
           ),
         ),
       ],
+    ),
     );
   }
 }
