@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/jelajah_screen.dart';
 import 'screens/cerita_saya_screen.dart';
 import 'screens/profil_screen.dart';
+import 'screens/auth/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +33,7 @@ class KisantaraApp extends StatelessWidget {
         ),
         textTheme: GoogleFonts.plusJakartaSansTextTheme(),
       ),
-      home: const HomeShell(),
+      home: const LoginScreen(), // Entry point: Login → User or Admin
     );
   }
 }
