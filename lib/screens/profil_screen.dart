@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'profile/edit_profil_screen.dart';
+import 'profile/notifikasi_screen.dart';
+import 'profile/bahasa_screen.dart';
+import 'profile/bantuan_screen.dart';
+import 'auth/login_screen.dart';
 
 class ProfilScreen extends StatelessWidget {
   const ProfilScreen({super.key});
@@ -74,13 +79,37 @@ class ProfilScreen extends StatelessWidget {
               const SizedBox(height: 32),
               // Menu items
               _MenuItem(
-                  icon: Icons.person_rounded, label: 'Edit Profil', context: context),
+                icon: Icons.person_rounded,
+                label: 'Edit Profil',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfilScreen()),
+                ),
+              ),
               _MenuItem(
-                  icon: Icons.notifications_rounded, label: 'Notifikasi', context: context),
+                icon: Icons.notifications_rounded,
+                label: 'Notifikasi',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotifikasiScreen()),
+                ),
+              ),
               _MenuItem(
-                  icon: Icons.language_rounded, label: 'Bahasa', context: context),
+                icon: Icons.language_rounded,
+                label: 'Bahasa',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BahasaScreen()),
+                ),
+              ),
               _MenuItem(
-                  icon: Icons.help_outline_rounded, label: 'Bantuan', context: context),
+                icon: Icons.help_outline_rounded,
+                label: 'Bantuan',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BantuanScreen()),
+                ),
+              ),
               const SizedBox(height: 16),
               // Logout button
               SizedBox(
@@ -89,9 +118,15 @@ class ProfilScreen extends StatelessWidget {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Anda telah keluar dari aplikasi.', style: GoogleFonts.plusJakartaSans()),
+                        content: Text('Anda telah keluar dari aplikasi.',
+                            style: GoogleFonts.plusJakartaSans()),
                         backgroundColor: const Color(0xFFDC2626),
                       ),
+                    );
+                    // Navigate to LoginScreen and clear navigation stack
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (route) => false,
                     );
                   },
                   icon: const Icon(Icons.logout_rounded,
@@ -163,8 +198,12 @@ class _StatCard extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
-  final BuildContext context;
-  const _MenuItem({required this.icon, required this.label, required this.context});
+  final VoidCallback onTap;
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -201,15 +240,7 @@ class _MenuItem extends StatelessWidget {
         ),
         trailing: const Icon(Icons.chevron_right_rounded,
             color: Color(0xFF64655C)),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Membuka menu $label...', style: GoogleFonts.plusJakartaSans()),
-              backgroundColor: const Color(0xFF00743B),
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        },
+        onTap: onTap,
       ),
     );
   }
