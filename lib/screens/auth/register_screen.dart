@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../main.dart'; // To access HomeShell
+import '../../services/auth_service.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,13 +15,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _penNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
-  void _register() {
-    // For now it's static UI. We move to main app straight away.
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const HomeShell()),
-      (route) => false,
-    );
+  void _register() async {
+    final penName = _penNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (penName.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Semua kolom harus diisi!', style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kata sandi harus minimal 6 karakter!', style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.registerWithEmailAndPassword(
+        email: email,
+        password: password,
+        penName: penName,
+      );
+
+      // Sign out immediately so user is not automatically logged in
+      await _authService.signOut();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pendaftaran berhasil! Silakan masuk dengan akun baru Anda.', style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFF00743B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
+
+      // Navigate to LoginScreen and clear everything
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      String errorMsg = 'Registrasi gagal. Silakan coba lagi.';
+      if (e.toString().contains('email-already-in-use')) {
+        errorMsg = 'Email sudah terdaftar.';
+      } else if (e.toString().contains('invalid-email')) {
+        errorMsg = 'Format email tidak valid.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg, style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -76,11 +152,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _passwordController,
                 label: 'Kata Sandi',
                 icon: Icons.lock_rounded,
-                obscureText: true,
+                isPassword: true,
               ),
               const SizedBox(height: 48),
               ElevatedButton(
-                onPressed: _register,
+                onPressed: _isLoading ? null : _register,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00743B),
                   foregroundColor: Colors.white,
@@ -90,13 +166,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   elevation: 4,
                 ),
-                child: Text(
-                  'Daftar Sekarang',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Text(
+                        'Daftar Sekarang',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -109,7 +194,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    bool obscureText = false,
+    bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
@@ -127,13 +212,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText,
+        obscureText: isPassword ? _obscurePassword : false,
         keyboardType: keyboardType,
         style: GoogleFonts.plusJakartaSans(color: const Color(0xFF373830)),
         decoration: InputDecoration(
           hintText: label,
           hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
           prefixIcon: Icon(icon, color: const Color(0xFF059669)),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_rounded
+                        : Icons.visibility_off_rounded,
+                    color: const Color(0xFF059669),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),

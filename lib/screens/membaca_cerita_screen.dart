@@ -1,14 +1,59 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'jelajah_screen.dart'; // import StoryModel
+import '../models/story_model.dart';
+import '../services/auth_service.dart';
+import '../services/database_service.dart';
 
-class MembacaCeritaScreen extends StatelessWidget {
+class MembacaCeritaScreen extends StatefulWidget {
   final StoryModel story;
   const MembacaCeritaScreen({super.key, required this.story});
 
   @override
+  State<MembacaCeritaScreen> createState() => _MembacaCeritaScreenState();
+}
+
+class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
+  final _authService = AuthService();
+  final _databaseService = DatabaseService();
+
+  @override
+  void initState() {
+    super.initState();
+    _recordRecentRead();
+  }
+
+  void _recordRecentRead() async {
+    final user = _authService.currentUser;
+    if (user != null) {
+      await _databaseService.addToRecentlyRead(user.uid, widget.story.id);
+    }
+  }
+
+  void _toggleBookmark() async {
+    final user = _authService.currentUser;
+    if (user != null) {
+      await _databaseService.toggleBookmark(user.uid, widget.story.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Status simpan cerita diperbarui.',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
+            backgroundColor: const Color(0xFF00743B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = _authService.currentUser;
+    final story = widget.story;
+    
     return Scaffold(
       backgroundColor: const Color(0xFFFEFDF1),
       body: Stack(
@@ -182,12 +227,21 @@ class MembacaCeritaScreen extends StatelessWidget {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(32),
-                                  child: Image.asset(
-                                    story.imagePath, 
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
+                                  child: story.imagePath.startsWith('http')
+                                      ? Image.network(
+                                          story.imagePath,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(Icons.image_not_supported_rounded, size: 50),
+                                        )
+                                      : Image.asset(
+                                          story.imagePath, 
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                        ),
                                 ),
                               ),
                             ),
@@ -399,26 +453,52 @@ class MembacaCeritaScreen extends StatelessWidget {
                                  ),
                                ),
                              ),
-                             const SizedBox(height: 16),
-                             TextButton(
-                               onPressed: () {},
-                               style: TextButton.styleFrom(
-                                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                 backgroundColor: const Color(0xFFABD6FF),
-                                 foregroundColor: const Color(0xFF004B74),
-                                 shape: RoundedRectangleBorder(
-                                   borderRadius: BorderRadius.circular(48),
+                             if (user != null)
+                               StreamBuilder<bool>(
+                                 stream: _databaseService.isStoryBookmarked(user.uid, story.id),
+                                 builder: (context, snapshot) {
+                                   final isBookmarked = snapshot.data ?? false;
+                                   return TextButton(
+                                     onPressed: _toggleBookmark,
+                                     style: TextButton.styleFrom(
+                                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                       backgroundColor: isBookmarked ? const Color(0xFFFEE2E2) : const Color(0xFFABD6FF),
+                                       foregroundColor: isBookmarked ? const Color(0xFFDC2626) : const Color(0xFF004B74),
+                                       shape: RoundedRectangleBorder(
+                                         borderRadius: BorderRadius.circular(48),
+                                       ),
+                                       minimumSize: const Size(double.infinity, 0),
+                                     ),
+                                     child: Text(
+                                       isBookmarked ? 'Batal Simpan' : 'Simpan Cerita',
+                                       style: GoogleFonts.beVietnamPro(
+                                         fontSize: 18,
+                                         fontWeight: FontWeight.w700,
+                                       ),
+                                     ),
+                                   );
+                                 },
+                               )
+                             else
+                               TextButton(
+                                 onPressed: () {},
+                                 style: TextButton.styleFrom(
+                                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                   backgroundColor: const Color(0xFFABD6FF),
+                                   foregroundColor: const Color(0xFF004B74),
+                                   shape: RoundedRectangleBorder(
+                                     borderRadius: BorderRadius.circular(48),
+                                   ),
+                                   minimumSize: const Size(double.infinity, 0),
                                  ),
-                                 minimumSize: const Size(double.infinity, 0),
-                               ),
-                               child: Text(
-                                 'Simpan Cerita',
-                                 style: GoogleFonts.beVietnamPro(
-                                   fontSize: 18,
-                                   fontWeight: FontWeight.w700,
+                                 child: Text(
+                                   'Simpan Cerita',
+                                   style: GoogleFonts.beVietnamPro(
+                                     fontSize: 18,
+                                     fontWeight: FontWeight.w700,
+                                   ),
                                  ),
                                ),
-                             ),
                            ],
                          ),
                       ),
@@ -470,10 +550,22 @@ class MembacaCeritaScreen extends StatelessWidget {
                       onTap: () {},
                     ),
                     const SizedBox(width: 12),
-                    _GlassButton(
-                      icon: Icons.bookmark_border_rounded,
-                      onTap: () {},
-                    ),
+                    if (user != null)
+                      StreamBuilder<bool>(
+                        stream: _databaseService.isStoryBookmarked(user.uid, story.id),
+                        builder: (context, snapshot) {
+                          final isBookmarked = snapshot.data ?? false;
+                          return _GlassButton(
+                            icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                            onTap: _toggleBookmark,
+                          );
+                        },
+                      )
+                    else
+                      _GlassButton(
+                        icon: Icons.bookmark_border_rounded,
+                        onTap: () {},
+                      ),
                   ],
                 ),
               ],

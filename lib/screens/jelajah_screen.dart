@@ -1,83 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'membaca_cerita_screen.dart';
-
-class StoryModel {
-  final String title;
-  final String subtitle;
-  final String imagePath;
-  final String category;
-  final Color categoryColor;
-  final Color categoryTextColor;
-  
-  // Dynamic story content fields
-  final String readTime;
-  final String part1;
-  final String quote;
-  final String quoteAuthor;
-  final String part2;
-
-  const StoryModel({
-    required this.title,
-    required this.subtitle,
-    required this.imagePath,
-    required this.category,
-    this.categoryColor = const Color(0xFFFED023),
-    this.categoryTextColor = const Color(0xFF594700),
-    required this.readTime,
-    required this.part1,
-    required this.quote,
-    required this.quoteAuthor,
-    required this.part2,
-  });
-}
-
-final List<StoryModel> appStories = [
-  StoryModel(
-    title: 'Sangkuriang',
-    subtitle: 'Gunung Tangkuban Perahu',
-    imagePath: 'assets/images/sangkuriang.png',
-    category: 'LEGENDA',
-    readTime: '6 min baca',
-    part1: 'Di sebuah hutan lebat, hiduplah seorang putri cantik bernama Dayang Sumbi dan putranya, Sangkuriang. Suatu hari, Sangkuriang tanpa sengaja membunuh Tumang, anjing kesayangan ibunya yang sebenarnya adalah ayah kandungnya sendiri.',
-    quote: '"Pergilah kau, anak durhaka! Jangan pernah kembali sampai kau mengerti kesalahanmu!"',
-    quoteAuthor: '— Dayang Sumbi',
-    part2: 'Bertahun-tahun berlalu, Sangkuriang kembali ke desanya dan tak mengenali ibunya yang masih tampak muda. Ia jatuh cinta pada Dayang Sumbi, yang kemudian memberinya syarat mustahil: membuat danau dan perahu dalam semalam.',
-  ),
-  StoryModel(
-    title: 'Bawang Merah Bawang Putih',
-    subtitle: 'Kisah Dua Saudara',
-    imagePath: 'assets/images/bawang_merah.png',
-    category: 'MITOS',
-    readTime: '4 min baca',
-    part1: 'Bawang Putih adalah gadis yang baik hati namun disiksa oleh ibu dan saudara tirinya, Bawang Merah. Ia harus mengerjakan semua pekerjaan rumah seorang diri tanpa pernah mengeluh.',
-    quote: '"Cepat cuci bajuku! Jangan bermalas-malasan, anak tak berguna!"',
-    quoteAuthor: '— Bawang Merah',
-    part2: 'Suatu ketika, selendang ibu Bawang Merah hanyut di sungai, mengantarkan Bawang Putih kepada seorang nenek sakti yang memberinya labu berisi emas permata sebagai balasan atas kebaikannya.',
-  ),
-  StoryModel(
-    title: 'Timun Mas',
-    subtitle: 'Gadis Timun Emas',
-    imagePath: 'assets/images/timun_mas.png',
-    category: 'FABEL',
-    readTime: '3 min baca',
-    part1: 'Di sebuah desa kecil, hiduplah seorang janda bernama Mbok Sirni. Ia hidup sebatang kara dan sangat mendambakan kehadiran seorang anak. Suatu hari, Buto Ijo mendengarnya berdoa.',
-    quote: '"Jangan takut, Mbok Sirni. Tanamlah biji ini, kau akan mendapatkan apa yang kau inginkan."',
-    quoteAuthor: '— Suara Gema Buto Ijo',
-    part2: 'Mbok Sirni menanam biji itu, dan tumbuhlah mentimun emas besar. Ketika dibelah, terdapat bayi cantik bernama Timun Mas. Namun, Buto Ijo kelak menagih janjinya untuk memakan anak itu.',
-  ),
-  StoryModel(
-    title: 'Si Kancil',
-    subtitle: 'Kancil dan Buaya',
-    imagePath: 'assets/images/si_kancil.png',
-    category: 'FABEL',
-    readTime: '2 min baca',
-    part1: 'Di suatu pagi yang cerah, udara terasa sangat segar karena semalam baru saja turun hujan. Si Kancil yang cerdik berjalan-jalan santai mencari makanan di tepi sungai yang sedang pasang.',
-    quote: '"Hai buaya, menepi sebentar! Aku punya pesan penting dari Raja Sulaiman untuk menghitung kalian!"',
-    quoteAuthor: '— Kancil yang cerdik',
-    part2: 'Buaya-buaya yang percaya pun berbaris rapi dari tepi satu ke tepi lainnya. Dengan cerdiknya, kancil melompat ke punggung buaya sambil berhitung, lalu berhasil melarikan diri menyeberang sungai.',
-  ),
-];
+import '../services/database_service.dart';
+import '../models/story_model.dart';
 
 final List<String> _categories = ['Semua', 'Mitos', 'Legenda', 'Fabel'];
 
@@ -90,11 +15,12 @@ class JelajahScreen extends StatefulWidget {
 
 class _JelajahScreenState extends State<JelajahScreen> {
   int _selectedCategory = 0;
+  final DatabaseService _databaseService = DatabaseService();
 
-  List<StoryModel> get _filtered {
-    if (_selectedCategory == 0) return appStories;
+  List<StoryModel> _filterStories(List<StoryModel> stories) {
+    if (_selectedCategory == 0) return stories;
     final cat = _categories[_selectedCategory].toUpperCase();
-    return appStories.where((s) => s.category == cat).toList();
+    return stories.where((s) => s.category.toUpperCase() == cat).toList();
   }
 
   @override
@@ -114,70 +40,100 @@ class _JelajahScreenState extends State<JelajahScreen> {
               ),
             ),
           ),
-          CustomScrollView(
-              slivers: [
-                // Spacer: status bar + top app bar (72dp) + breathing room
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: MediaQuery.of(context).padding.top + 72 + 24,
+          StreamBuilder<List<StoryModel>>(
+            stream: _databaseService.getStories(),
+            builder: (context, snapshot) {
+              final stories = snapshot.data ?? [];
+              final filtered = _filterStories(stories);
+
+              return CustomScrollView(
+                slivers: [
+                  // Spacer: status bar + top app bar (72dp) + breathing room
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: MediaQuery.of(context).padding.top + 72 + 24,
+                    ),
                   ),
-                ),
-                // Search + Filter
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _SearchBar(),
-                        const SizedBox(height: 24),
-                        _CategoryChips(
-                          categories: _categories,
-                          selected: _selectedCategory,
-                          onSelected: (i) =>
-                              setState(() => _selectedCategory = i),
+                  // Search + Filter
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SearchBar(),
+                          const SizedBox(height: 24),
+                          _CategoryChips(
+                            categories: _categories,
+                            selected: _selectedCategory,
+                            onSelected: (i) =>
+                                setState(() => _selectedCategory = i),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  
+                  if (snapshot.connectionState == ConnectionState.waiting)
+                    const SliverFillRemaining(
+                      child: Center(
+                        child: CircularProgressIndicator(color: Color(0xFF00743B)),
+                      ),
+                    )
+                  else if (filtered.isEmpty)
+                     SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.inbox_rounded, size: 64, color: Color(0xFFBABAAF)),
+                            const SizedBox(height: 12),
+                            Text('Belum ada cerita.',
+                                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+                          ],
                         ),
-                      ],
+                      ),
+                    )
+                  else
+                    // Stories grid
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 24,
+                          crossAxisSpacing: 24,
+                          childAspectRatio: 159 / 290,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (ctx, i) {
+                            final story = filtered[i];
+                            final isRightColumn = i % 2 == 1;
+                            return Padding(
+                              padding: EdgeInsets.only(top: isRightColumn ? 32 : 0),
+                              child: _StoryCard(story: story),
+                            );
+                          },
+                          childCount: filtered.length,
+                        ),
+                      ),
+                    ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  // Reading Mission card
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _MissionCard(),
                     ),
                   ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                // Stories grid
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 24,
-                      crossAxisSpacing: 24,
-                      childAspectRatio: 159 / 290,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) {
-                        final story = _filtered[i];
-                        final isRightColumn = i % 2 == 1;
-                        return Padding(
-                          padding: EdgeInsets.only(top: isRightColumn ? 32 : 0),
-                          child: _StoryCard(story: story),
-                        );
-                      },
-                      childCount: _filtered.length,
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                // Reading Mission card
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _MissionCard(),
-                  ),
-                ),
-                // Bottom nav padding
-                const SliverToBoxAdapter(child: SizedBox(height: 120)),
-              ],
-            ),
+                  // Bottom nav padding
+                  const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                ],
+              );
+            },
+          ),
           // Top App Bar
           _TopAppBar(),
         ],
@@ -327,12 +283,21 @@ class _StoryCard extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(48),
-                child: Image.asset(
-                  story.imagePath,
-                  width: double.infinity,
-                  height: 212,
-                  fit: BoxFit.cover,
-                ),
+                child: story.imagePath.startsWith('http')
+                    ? Image.network(
+                        story.imagePath,
+                        width: double.infinity,
+                        height: 212,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.image_not_supported_rounded),
+                      )
+                    : Image.asset(
+                        story.imagePath,
+                        width: double.infinity,
+                        height: 212,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             // Category badge

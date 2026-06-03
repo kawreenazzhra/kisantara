@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../main.dart'; // To access HomeShell
 import '../admin/admin_shell.dart'; // To access AdminShell
 import 'register_screen.dart';
+import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,18 +15,76 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
-  void _login() {
+  void _login() async {
     final email = _emailController.text.trim();
-    // Use hardcoded credential detection
-    if (email == 'admin@admin.com') {
-       Navigator.of(context).pushReplacement(
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email dan kata sandi harus diisi!', style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
+      return;
+    }
+
+    if (email == 'admin@admin.com' && password == 'admin123') {
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AdminShell()),
       );
-    } else {
-       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeShell()),
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final credential = await _authService.signInWithEmailAndPassword(email, password);
+      final uid = credential.user?.uid;
+      if (uid != null) {
+        final profile = await _authService.getUserProfile(uid);
+        if (profile != null) {
+          if (profile.role == 'admin') {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const AdminShell()),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomeShell()),
+            );
+          }
+        } else {
+          // If no profile found in Firestore (should not happen, but fallback)
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeShell()),
+          );
+        }
+      }
+    } catch (e) {
+      String errorMsg = 'Gagal masuk. Silakan periksa kembali email & sandi Anda.';
+      if (e.toString().contains('user-not-found')) {
+        errorMsg = 'Pengguna tidak ditemukan.';
+      } else if (e.toString().contains('wrong-password')) {
+        errorMsg = 'Kata sandi salah.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg, style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -84,11 +143,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   label: 'Kata Sandi',
                   icon: Icons.lock_rounded,
-                  obscureText: true,
+                  isPassword: true,
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00743B),
                     foregroundColor: Colors.white,
@@ -98,13 +157,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 4,
                   ),
-                  child: Text(
-                    'Mulai Petualangan',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Mulai Petualangan',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -144,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    bool obscureText = false,
+    bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
@@ -162,13 +230,28 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText,
+        obscureText: isPassword ? _obscurePassword : false,
         keyboardType: keyboardType,
         style: GoogleFonts.plusJakartaSans(color: const Color(0xFF373830)),
         decoration: InputDecoration(
           hintText: label,
           hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
           prefixIcon: Icon(icon, color: const Color(0xFF059669)),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_rounded
+                        : Icons.visibility_off_rounded,
+                    color: const Color(0xFF059669),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),

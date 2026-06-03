@@ -5,150 +5,184 @@ import 'profile/notifikasi_screen.dart';
 import 'profile/bahasa_screen.dart';
 import 'profile/bantuan_screen.dart';
 import 'auth/login_screen.dart';
+import '../services/auth_service.dart';
+import '../models/user_model.dart';
 
 class ProfilScreen extends StatelessWidget {
   const ProfilScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+    final currentUser = authService.currentUser;
+
+    if (currentUser == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFEFDF1),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFEFDF1),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              // Avatar
-              Stack(
-                alignment: Alignment.bottomRight,
+        child: FutureBuilder<UserModel?>(
+          future: authService.getUserProfile(currentUser.uid),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)));
+            }
+
+            final userProfile = snapshot.data;
+            final penName = userProfile?.penName ?? 'Penjelajah Kisantara';
+            final email = userProfile?.email ?? currentUser.email ?? 'penjelajah@kisantara.id';
+            final savedCount = userProfile?.savedStories.length ?? 0;
+            final readCount = userProfile?.recentlyRead.length ?? 0;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
+              child: Column(
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFF75F39C), width: 3),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/user_avatar.png',
-                        fit: BoxFit.cover,
+                  const SizedBox(height: 16),
+                  // Avatar
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: const Color(0xFF75F39C), width: 3),
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/user_avatar.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.person, size: 50, color: Color(0xFF00743B)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF00743B),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.edit, color: Colors.white, size: 14),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Penjelajah Kisantara',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF065F46),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'penjelajah@kisantara.id',
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 14,
-                  color: const Color(0xFF64655C),
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Stats row
-              Row(
-                children: [
-                  _StatCard(value: '12', label: 'Cerita Dibaca'),
-                  const SizedBox(width: 16),
-                  _StatCard(value: '3', label: 'Lencana'),
-                  const SizedBox(width: 16),
-                  _StatCard(value: '5', label: 'Disimpan'),
-                ],
-              ),
-              const SizedBox(height: 32),
-              // Menu items
-              _MenuItem(
-                icon: Icons.person_rounded,
-                label: 'Edit Profil',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EditProfilScreen()),
-                ),
-              ),
-              _MenuItem(
-                icon: Icons.notifications_rounded,
-                label: 'Notifikasi',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotifikasiScreen()),
-                ),
-              ),
-              _MenuItem(
-                icon: Icons.language_rounded,
-                label: 'Bahasa',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BahasaScreen()),
-                ),
-              ),
-              _MenuItem(
-                icon: Icons.help_outline_rounded,
-                label: 'Bantuan',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BantuanScreen()),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Logout button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Anda telah keluar dari aplikasi.',
-                            style: GoogleFonts.plusJakartaSans()),
-                        backgroundColor: const Color(0xFFDC2626),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF00743B),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.edit, color: Colors.white, size: 14),
                       ),
-                    );
-                    // Navigate to LoginScreen and clear navigation stack
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      (route) => false,
-                    );
-                  },
-                  icon: const Icon(Icons.logout_rounded,
-                      color: Color(0xFFDC2626)),
-                  label: Text(
-                    'Keluar',
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    penName,
                     style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFDC2626),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF065F46),
                     ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(
-                        color: Color(0xFFDC2626), width: 1.5),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(48)),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 14,
+                      color: const Color(0xFF64655C),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 40),
+                  // Stats row
+                  Row(
+                    children: [
+                      _StatCard(value: '$readCount', label: 'Cerita Dibaca'),
+                      const SizedBox(width: 16),
+                      _StatCard(value: '3', label: 'Lencana'),
+                      const SizedBox(width: 16),
+                      _StatCard(value: '$savedCount', label: 'Disimpan'),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  // Menu items
+                  _MenuItem(
+                    icon: Icons.person_rounded,
+                    label: 'Edit Profil',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EditProfilScreen()),
+                    ).then((_) {
+                      // Refresh profile when returning from edit screen
+                      (context as Element).markNeedsBuild();
+                    }),
+                  ),
+                  _MenuItem(
+                    icon: Icons.notifications_rounded,
+                    label: 'Notifikasi',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotifikasiScreen()),
+                    ),
+                  ),
+                  _MenuItem(
+                    icon: Icons.language_rounded,
+                    label: 'Bahasa',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BahasaScreen()),
+                    ),
+                  ),
+                  _MenuItem(
+                    icon: Icons.help_outline_rounded,
+                    label: 'Bantuan',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BantuanScreen()),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Logout button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await authService.signOut();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Anda telah keluar dari aplikasi.',
+                                style: GoogleFonts.plusJakartaSans()),
+                            backgroundColor: const Color(0xFFDC2626),
+                          ),
+                        );
+                        // Navigate to LoginScreen and clear navigation stack
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                      icon: const Icon(Icons.logout_rounded,
+                          color: Color(0xFFDC2626)),
+                      label: Text(
+                        'Keluar',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(
+                            color: Color(0xFFDC2626), width: 1.5),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(48)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

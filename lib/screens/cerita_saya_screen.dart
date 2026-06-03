@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'jelajah_screen.dart'; 
 import 'membaca_cerita_screen.dart';
+import 'write_story_screen.dart';
+import '../services/auth_service.dart';
+import '../services/database_service.dart';
+import '../models/story_model.dart';
 
 class CeritaSayaScreen extends StatefulWidget {
   const CeritaSayaScreen({super.key});
@@ -11,17 +14,90 @@ class CeritaSayaScreen extends StatefulWidget {
 }
 
 class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
-  int _selectedTab = 0; // 0 = Disimpan, 1 = Terakhir Dibaca
+  int _selectedTab = 0; // 0 = Disimpan, 1 = Terakhir Dibaca, 2 = Tulisan Saya
+  final _authService = AuthService();
+  final _databaseService = DatabaseService();
+
+  void _deleteStory(String storyId, String storyTitle) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Hapus Cerita?',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF065F46),
+          ),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus "$storyTitle"? Cerita yang dihapus tidak dapat dipulihkan.',
+          style: GoogleFonts.beVietnamPro(color: const Color(0xFF64655C)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _databaseService.deleteStory(storyId);
+              if (mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Cerita berhasil dihapus.', style: GoogleFonts.plusJakartaSans()),
+                    backgroundColor: const Color(0xFFDC2626),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('Hapus', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Determine which stories to show based on dummy state
-    final listToShow = _selectedTab == 0
-        ? [appStories[1], appStories[2]] // Saved: Bawang Merah, Timun Mas
-        : [appStories[0], appStories[3]]; // Terakhir Dibaca: Sangkuriang, Si Kancil
+    final user = _authService.currentUser;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFEFDF1),
+        body: Center(
+          child: Text('Silakan login terlebih dahulu.'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFFEFDF1),
+      floatingActionButton: _selectedTab == 2
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WriteStoryScreen()),
+                );
+              },
+              backgroundColor: const Color(0xFF00743B),
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.edit_note_rounded),
+              label: Text(
+                'Tulis Cerita',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            )
+          : null,
+      floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -42,32 +118,97 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
             // Custom Tabs
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  _TabItem(
-                    title: 'Disimpan',
-                    isSelected: _selectedTab == 0,
-                    onTap: () => setState(() => _selectedTab = 0),
-                  ),
-                  const SizedBox(width: 16),
-                  _TabItem(
-                    title: 'Terakhir Dibaca',
-                    isSelected: _selectedTab == 1,
-                    onTap: () => setState(() => _selectedTab = 1),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _TabItem(
+                      title: 'Disimpan',
+                      isSelected: _selectedTab == 0,
+                      onTap: () => setState(() => _selectedTab = 0),
+                    ),
+                    const SizedBox(width: 12),
+                    _TabItem(
+                      title: 'Terakhir Dibaca',
+                      isSelected: _selectedTab == 1,
+                      onTap: () => setState(() => _selectedTab = 1),
+                    ),
+                    const SizedBox(width: 12),
+                    _TabItem(
+                      title: 'Tulisan Saya',
+                      isSelected: _selectedTab == 2,
+                      onTap: () => setState(() => _selectedTab = 2),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            // List of Stories
+            // List of Stories from Firestore
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
-                itemCount: listToShow.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final story = listToShow[index];
-                  return _StoryListTile(story: story);
+              child: StreamBuilder<List<StoryModel>>(
+                stream: _selectedTab == 0
+                    ? _databaseService.getBookmarkedStories(user.uid)
+                    : _selectedTab == 1
+                        ? _databaseService.getRecentlyReadStories(user.uid)
+                        : _databaseService.getUserStories(user.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF00743B),
+                      ),
+                    );
+                  }
+                  
+                  final listToShow = snapshot.data ?? [];
+                  if (listToShow.isEmpty) {
+                    String emptyText = 'Belum ada cerita disimpan.';
+                    IconData emptyIcon = Icons.bookmark_border_rounded;
+                    if (_selectedTab == 1) {
+                      emptyText = 'Belum ada riwayat membaca.';
+                      emptyIcon = Icons.history_rounded;
+                    } else if (_selectedTab == 2) {
+                      emptyText = 'Anda belum menulis cerita apapun.';
+                      emptyIcon = Icons.draw_rounded;
+                    }
+
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(emptyIcon, size: 64, color: const Color(0xFFBABAAF)),
+                          const SizedBox(height: 12),
+                          Text(
+                            emptyText,
+                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
+                    itemCount: listToShow.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final story = listToShow[index];
+                      return _StoryListTile(
+                        story: story,
+                        isOwnWork: _selectedTab == 2,
+                        onDelete: () => _deleteStory(story.id, story.title),
+                        onEdit: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WriteStoryScreen(editStory: story),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                 },
               ),
             ),
@@ -118,10 +259,52 @@ class _TabItem extends StatelessWidget {
 
 class _StoryListTile extends StatelessWidget {
   final StoryModel story;
-  const _StoryListTile({required this.story});
+  final bool isOwnWork;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
+
+  const _StoryListTile({
+    required this.story,
+    this.isOwnWork = false,
+    this.onDelete,
+    this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Widget imageWidget;
+    if (story.imagePath.startsWith('http')) {
+      imageWidget = Image.network(
+        story.imagePath,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 80,
+            height: 80,
+            color: const Color(0xFFE5E7EB),
+            child: const Icon(Icons.image_not_supported_rounded, color: Color(0xFF9CA3AF)),
+          );
+        },
+      );
+    } else {
+      imageWidget = Image.asset(
+        story.imagePath,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 80,
+            height: 80,
+            color: const Color(0xFFE5E7EB),
+            child: const Icon(Icons.image_not_supported_rounded, color: Color(0xFF9CA3AF)),
+          );
+        },
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -148,12 +331,7 @@ class _StoryListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                story.imagePath,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
+              child: imageWidget,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -183,8 +361,43 @@ class _StoryListTile extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF373830),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
+                  // Show status badge for user's own stories
+                  if (isOwnWork && story.isPending)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      child: Text(
+                        '⏳ Menunggu persetujuan admin',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFD97706),
+                        ),
+                      ),
+                    )
+                  else if (isOwnWork && story.isRejected)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      child: Text(
+                        '❌ Ditolak oleh admin',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                    ),
                   Row(
                     children: [
                       const Icon(Icons.access_time_rounded, size: 12, color: Color(0xFF64655C)),
@@ -201,10 +414,41 @@ class _StoryListTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFBABAAF)),
+            if (isOwnWork) ...[  
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_rounded, color: Color(0xFF2563EB), size: 20),
+                    onPressed: onEdit,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFDC2626), size: 20),
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ] else
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFBABAAF)),
           ],
         ),
       ),
     );
+  }
+}
+
+class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  const _CustomFloatingActionButtonLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset standardOffset = FloatingActionButtonLocation.endFloat.getOffset(scaffoldGeometry);
+    // Move the FAB 88 pixels higher to sit nicely above the navigation bar
+    return Offset(standardOffset.dx, standardOffset.dy - 88);
   }
 }
