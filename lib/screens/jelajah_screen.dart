@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'membaca_cerita_screen.dart';
 import '../services/database_service.dart';
 import '../models/story_model.dart';
@@ -96,28 +97,18 @@ class _JelajahScreenState extends State<JelajahScreen> {
                       ),
                     )
                   else
-                    // Stories grid
+                    // Stories grid (Masonry Layout)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 24,
-                          crossAxisSpacing: 24,
-                          childAspectRatio: 159 / 290,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (ctx, i) {
-                            final story = filtered[i];
-                            final isRightColumn = i % 2 == 1;
-                            return Padding(
-                              padding: EdgeInsets.only(top: isRightColumn ? 32 : 0),
-                              child: _StoryCard(story: story),
-                            );
-                          },
-                          childCount: filtered.length,
-                        ),
+                      sliver: SliverMasonryGrid.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 24,
+                        crossAxisSpacing: 24,
+                        itemBuilder: (ctx, i) {
+                          final story = filtered[i];
+                          return _StoryCard(story: story, index: i);
+                        },
+                        childCount: filtered.length,
                       ),
                     ),
                   const SliverToBoxAdapter(child: SizedBox(height: 40)),
@@ -145,31 +136,71 @@ class _JelajahScreenState extends State<JelajahScreen> {
 // ─────────────────────────────────────────────
 // Search Bar
 // ─────────────────────────────────────────────
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  bool _isPressed = false;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 68,
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFEFE0),
-        borderRadius: BorderRadius.circular(48),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 20),
-          Icon(Icons.search, color: const Color(0xFF00743B).withOpacity(0.6), size: 22),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              'Cari cerita ajaib...',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF64655C).withOpacity(0.5),
-              ),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 68,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(48),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.6),
+              width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00743B).withOpacity(_isPressed ? 0.08 : 0.04),
+                blurRadius: _isPressed ? 24 : 16,
+                spreadRadius: _isPressed ? 2 : 0,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 8,
+                spreadRadius: -2,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
+          child: Row(
+            children: [
+              const SizedBox(width: 24),
+              Icon(
+                Icons.search,
+                color: const Color(0xFF00743B).withOpacity(0.7),
+                size: 24,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Cari cerita ajaib...',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64655C).withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -178,7 +209,7 @@ class _SearchBar extends StatelessWidget {
 // ─────────────────────────────────────────────
 // Category Chips
 // ─────────────────────────────────────────────
-class _CategoryChips extends StatelessWidget {
+class _CategoryChips extends StatefulWidget {
   final List<String> categories;
   final int selected;
   final ValueChanged<int> onSelected;
@@ -190,51 +221,74 @@ class _CategoryChips extends StatelessWidget {
   });
 
   @override
+  State<_CategoryChips> createState() => _CategoryChipsState();
+}
+
+class _CategoryChipsState extends State<_CategoryChips> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollVelocity = 0.0;
+  double _lastOffset = 0.0;
+  int _lastTimestamp = DateTime.now().microsecondsSinceEpoch;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    if (!mounted) return;
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final double currentOffset = _scrollController.offset;
+    final int dt = now - _lastTimestamp; // in microseconds
+    if (dt > 0) {
+      final double delta = currentOffset - _lastOffset;
+      // velocity is px per microsecond * 1000
+      final double velocity = (delta / dt) * 1000.0;
+      setState(() {
+        _scrollVelocity = velocity.clamp(-15.0, 15.0);
+      });
+    }
+    _lastOffset = currentOffset;
+    _lastTimestamp = now;
+
+    // Decay velocity back to 0
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (!mounted) return;
+      if (_scrollController.offset == _lastOffset) {
+        setState(() {
+          _scrollVelocity = _scrollVelocity * 0.7;
+          if (_scrollVelocity.abs() < 0.1) _scrollVelocity = 0.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollController,
       scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
       child: Row(
-        children: List.generate(categories.length, (i) {
-          final isActive = i == selected;
+        children: List.generate(widget.categories.length, (i) {
+          final isActive = i == widget.selected;
           return Padding(
-            padding: EdgeInsets.only(right: i < categories.length - 1 ? 12 : 0),
-            child: GestureDetector(
-              onTap: () => onSelected(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFF00743B)
-                      : const Color(0xFFABD6FF),
-                  borderRadius: BorderRadius.circular(9999),
-                  boxShadow: isActive
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFF00743B).withOpacity(0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 10),
-                          ),
-                          BoxShadow(
-                            color: const Color(0xFF00743B).withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Text(
-                  categories[i],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight:
-                        isActive ? FontWeight.w700 : FontWeight.w600,
-                    color: isActive
-                        ? Colors.white
-                        : const Color(0xFF004B74),
-                  ),
-                ),
+            padding: EdgeInsets.only(right: i < widget.categories.length - 1 ? 12 : 0),
+            child: Transform(
+              transform: Matrix4.skewX(_scrollVelocity * 0.015),
+              alignment: Alignment.center,
+              child: _InteractiveCategoryChip(
+                label: widget.categories[i],
+                isActive: isActive,
+                onTap: () => widget.onSelected(i),
               ),
             ),
           );
@@ -244,121 +298,228 @@ class _CategoryChips extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// Story Card
-// ─────────────────────────────────────────────
-class _StoryCard extends StatelessWidget {
-  final StoryModel story;
-  const _StoryCard({required this.story});
+class _InteractiveCategoryChip extends StatefulWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _InteractiveCategoryChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  State<_InteractiveCategoryChip> createState() => _InteractiveCategoryChipState();
+}
+
+class _InteractiveCategoryChipState extends State<_InteractiveCategoryChip> {
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.94 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? const Color(0xFF00743B)
+                : const Color(0xFFABD6FF),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(
+              color: widget.isActive ? Colors.transparent : Colors.white.withOpacity(0.4),
+              width: 1,
+            ),
+            boxShadow: widget.isActive
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF00743B).withOpacity(0.25),
+                      blurRadius: 15,
+                      offset: const Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF00743B).withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: const Color(0xFFABD6FF).withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Text(
+            widget.label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: widget.isActive ? FontWeight.w700 : FontWeight.w600,
+              color: widget.isActive
+                  ? Colors.white
+                  : const Color(0xFF004B74),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Story Card
+// ─────────────────────────────────────────────
+class _StoryCard extends StatefulWidget {
+  final StoryModel story;
+  final int index;
+  const _StoryCard({required this.story, required this.index});
+
+  @override
+  State<_StoryCard> createState() => _StoryCardState();
+}
+
+class _StoryCardState extends State<_StoryCard> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final double imageHeight = widget.index % 3 == 0
+        ? 190.0
+        : (widget.index % 3 == 1 ? 240.0 : 215.0);
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MembacaCeritaScreen(story: story),
+            builder: (context) => MembacaCeritaScreen(story: widget.story),
           ),
         );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-        // Image with category badge
-        Stack(
+      child: AnimatedScale(
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 212,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(48),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF064E3B).withOpacity(0.1),
-                    blurRadius: 50,
-                    spreadRadius: -12,
-                    offset: const Offset(0, 25),
+            // Image with category badge
+            Stack(
+              children: [
+                Container(
+                  height: imageHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF064E3B).withOpacity(0.08),
+                        blurRadius: 40,
+                        spreadRadius: -8,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: widget.story.imagePath.startsWith('http')
+                        ? Image.network(
+                            widget.story.imagePath,
+                            width: double.infinity,
+                            height: imageHeight,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(Icons.image_not_supported_rounded),
+                                ),
+                          )
+                        : Image.asset(
+                            widget.story.imagePath,
+                            width: double.infinity,
+                            height: imageHeight,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
+                // Category badge
+                Positioned(
+                  top: 14,
+                  right: 14,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: widget.story.categoryColor,
+                      borderRadius: BorderRadius.circular(9999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: Text(
+                      widget.story.category,
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: widget.story.categoryTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Title + subtitle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.story.title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF373830),
+                      height: 1.25,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.story.subtitle,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF64655C),
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(48),
-                child: story.imagePath.startsWith('http')
-                    ? Image.network(
-                        story.imagePath,
-                        width: double.infinity,
-                        height: 212,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.image_not_supported_rounded),
-                      )
-                    : Image.asset(
-                        story.imagePath,
-                        width: double.infinity,
-                        height: 212,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-            ),
-            // Category badge
-            Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: story.categoryColor,
-                  borderRadius: BorderRadius.circular(9999),
-                ),
-                child: Text(
-                  story.category,
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: story.categoryTextColor,
-                  ),
-                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 11),
-        // Title + subtitle
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                story.title,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF373830),
-                  height: 1.25,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                story.subtitle,
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF64655C),
-                  height: 1.43,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
+      ),
     );
   }
 }
