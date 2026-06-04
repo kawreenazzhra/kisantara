@@ -301,14 +301,35 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF065F46)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          isEditing ? 'Edit Cerita Anda' : 'Tulis Cerita Baru',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF065F46),
-            fontSize: 20,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.history_edu_rounded, // Quill pen icon
+              color: Color(0xFF065F46),
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              isEditing ? 'Edit Cerita Anda' : 'Tulis Cerita Baru',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF065F46),
+                fontSize: 20,
+              ),
+            ),
+          ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: const Icon(
+              Icons.menu_book_rounded, // Book icon
+              color: Color(0xFF065F46),
+              size: 24,
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: _isLoading
@@ -322,6 +343,19 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE6F4EA),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.history_edu_rounded,
+                        color: Color(0xFF065F46),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       'Bagikan Petualanganmu!',
                       style: GoogleFonts.plusJakartaSans(
@@ -588,21 +622,51 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                     const SizedBox(height: 32),
 
                     // ── Simpan ──
-                    SizedBox(
+                    Container(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _submit,
-                        icon: const Icon(Icons.send_rounded),
-                        label: Text(
-                          isEditing ? 'Simpan Perubahan' : 'Publikasikan Cerita',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF044E32), // Dark Green
+                            Color(0xFF10B981), // Light Green
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00743B),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          elevation: 4,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF044E32).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _submit,
+                          borderRadius: BorderRadius.circular(24),
+                          splashColor: Colors.white.withOpacity(0.25),
+                          highlightColor: Colors.white.withOpacity(0.15),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.send_rounded, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isEditing ? 'Simpan Perubahan' : 'Publikasikan Cerita',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -629,22 +693,35 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
     required String hint,
     required IconData icon,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+    return TextField(
+      controller: controller,
+      maxLines: null,
+      minLines: 1,
+      keyboardType: TextInputType.multiline,
+      style: GoogleFonts.plusJakartaSans(
+        color: const Color(0xFF373830),
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
       ),
-      child: TextField(
-        controller: controller,
-        style: GoogleFonts.plusJakartaSans(color: const Color(0xFF373830)),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
-          prefixIcon: Icon(icon, color: const Color(0xFF059669)),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFFF5F4E8), // soft warm cream background
+        hintText: hint,
+        hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF), fontSize: 14),
+        prefixIcon: Icon(icon, color: const Color(0xFF059669), size: 22),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF059669), width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
     );
   }
@@ -653,22 +730,34 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
     required TextEditingController controller,
     required String hint,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+    return TextField(
+      controller: controller,
+      maxLines: null,
+      minLines: 5,
+      keyboardType: TextInputType.multiline,
+      style: GoogleFonts.beVietnamPro(
+        color: const Color(0xFF373830), 
+        fontSize: 14, 
+        height: 1.6,
       ),
-      child: TextField(
-        controller: controller,
-        maxLines: 6,
-        style: GoogleFonts.beVietnamPro(color: const Color(0xFF373830), fontSize: 14, height: 1.6),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(20),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFFF5F4E8), // soft warm cream background
+        hintText: hint,
+        hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF), fontSize: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF059669), width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.all(20),
       ),
     );
   }
