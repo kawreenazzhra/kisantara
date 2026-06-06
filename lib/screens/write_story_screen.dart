@@ -28,6 +28,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
   String? _simulatedImageName;
   String? _uploadedImageUrl;
   bool _isLoading = false;
+  bool _showQuote = false; // Kutipan opsional
   String _authorName = 'Anonim';
 
   final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL'];
@@ -159,8 +160,8 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
   void _submit() async {
     final title = _titleController.text.trim();
     final subtitle = _subtitleController.text.trim();
-    final quote = _quoteController.text.trim();
-    final quoteAuthor = _quoteAuthorController.text.trim();
+    final quote = _showQuote ? _quoteController.text.trim() : '';
+    final quoteAuthor = _showQuote ? _quoteAuthorController.text.trim() : '';
     final part1 = _part1Controller.text.trim();
     final part2 = _part2Controller.text.trim();
     final manualUrl = _imageUrlController.text.trim();
@@ -550,22 +551,34 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                     ],
                     const SizedBox(height: 24),
 
-                    // ── Kutipan (Quote) ──
-                    _sectionLabel('Kutipan Favorit Cerita (Quote)'),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      controller: _quoteController,
-                      hint: 'Contoh: Jangan pernah melupakan jasa orang tua.',
-                      icon: Icons.format_quote_rounded,
-                    ),
-                    const SizedBox(height: 20),
-
-                    _sectionLabel('Tokoh Kutipan'),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      controller: _quoteAuthorController,
-                      hint: 'Contoh: Malin Kundang',
-                      icon: Icons.person_outline_rounded,
+                    // ── Kutipan Favorit (Opsional) ──
+                    _buildQuoteToggle(),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: _showQuote
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                _sectionLabel('Kutipan Favorit'),
+                                const SizedBox(height: 10),
+                                _buildTextField(
+                                  controller: _quoteController,
+                                  hint: 'Contoh: Jangan pernah melupakan jasa orang tua.',
+                                  icon: Icons.format_quote_rounded,
+                                ),
+                                const SizedBox(height: 16),
+                                _sectionLabel('Tokoh Kutipan'),
+                                const SizedBox(height: 10),
+                                _buildTextField(
+                                  controller: _quoteAuthorController,
+                                  hint: 'Contoh: Malin Kundang',
+                                  icon: Icons.person_outline_rounded,
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                     const SizedBox(height: 24),
 
@@ -609,6 +622,72 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  /// Toggle kutipan opsional — desain selaras dengan admin form
+  Widget _buildQuoteToggle() {
+    return GestureDetector(
+      onTap: () => setState(() => _showQuote = !_showQuote),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: _showQuote ? const Color(0xFFD1FAE5) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _showQuote ? const Color(0xFF00743B) : const Color(0xFFE5E7EB),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: _showQuote ? const Color(0xFF00743B) : Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: _showQuote ? const Color(0xFF00743B) : const Color(0xFFD1D5DB),
+                  width: 2,
+                ),
+              ),
+              child: _showQuote
+                  ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tambah Kutipan Favorit',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _showQuote ? const Color(0xFF065F46) : const Color(0xFF374151),
+                  ),
+                ),
+                Text(
+                  'Opsional — kalimat berkesan dari cerita ini',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 12,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Icon(
+              Icons.format_quote_rounded,
+              color: _showQuote ? const Color(0xFF059669) : const Color(0xFFD1D5DB),
+              size: 24,
+            ),
+          ],
+        ),
       ),
     );
   }

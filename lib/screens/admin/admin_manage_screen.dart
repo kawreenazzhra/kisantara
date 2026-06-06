@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/story_model.dart';
 import '../../services/database_service.dart';
+import 'admin_form_screen.dart';
 
 class AdminManageScreen extends StatefulWidget {
   const AdminManageScreen({super.key});
@@ -102,71 +103,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
   }
 
   void _editStory(StoryModel story) {
-    final titleCtrl = TextEditingController(text: story.title);
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'Edit Judul Cerita',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: const Color(0xFF065F46)),
-        ),
-        content: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
-          ),
-          child: TextField(
-            controller: titleCtrl,
-            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF373830)),
-            decoration: InputDecoration(
-              hintText: 'Judul cerita',
-              hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await _databaseService.updateStory(story.id, {'title': titleCtrl.text.trim()});
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Cerita berhasil diperbarui!', style: GoogleFonts.plusJakartaSans()),
-                      backgroundColor: const Color(0xFF00743B),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Gagal memperbarui cerita: $e', style: GoogleFonts.plusJakartaSans()),
-                      backgroundColor: const Color(0xFFDC2626),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00743B),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text('Simpan', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AdminFormScreen(editStory: story),
       ),
     );
   }

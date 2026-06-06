@@ -6,7 +6,9 @@ import '../../services/storage_service.dart';
 import '../../models/story_model.dart';
 
 class AdminFormScreen extends StatefulWidget {
-  const AdminFormScreen({super.key});
+  final StoryModel? editStory;
+
+  const AdminFormScreen({super.key, this.editStory});
 
   @override
   State<AdminFormScreen> createState() => _AdminFormScreenState();
@@ -14,17 +16,59 @@ class AdminFormScreen extends StatefulWidget {
 
 class _AdminFormScreenState extends State<AdminFormScreen> {
   final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
+  final _subtitleController = TextEditingController();
+  final _part1Controller = TextEditingController();
+  final _part2Controller = TextEditingController();
   final _imageUrlController = TextEditingController();
+  final _quoteController = TextEditingController();
+  final _quoteAuthorController = TextEditingController();
+
   String _selectedCategory = 'LEGENDA';
   String? _imageName;
   String? _uploadedImageUrl;
   bool _isLoading = false;
+  bool _showQuote = false; // Kutipan opsional
 
   final DatabaseService _databaseService = DatabaseService();
   final StorageService _storageService = StorageService();
 
   final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL'];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editStory != null) {
+      final story = widget.editStory!;
+      _titleController.text = story.title;
+      _subtitleController.text = story.subtitle;
+      _part1Controller.text = story.part1;
+      _part2Controller.text = story.part2;
+      _quoteController.text = story.quote;
+      _quoteAuthorController.text = story.quoteAuthor;
+      _selectedCategory = story.category.toUpperCase();
+      
+      if (story.quote.isNotEmpty) _showQuote = true;
+
+      if (story.imagePath.startsWith('http')) {
+        _imageUrlController.text = story.imagePath;
+        _uploadedImageUrl = story.imagePath;
+      } else {
+        _imageName = story.imagePath.split('/').last;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _subtitleController.dispose();
+    _part1Controller.dispose();
+    _part2Controller.dispose();
+    _imageUrlController.dispose();
+    _quoteController.dispose();
+    _quoteAuthorController.dispose();
+    super.dispose();
+  }
 
   void _pickAndUpload() async {
     setState(() => _isLoading = true);
@@ -109,12 +153,16 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
 
   void _submit() async {
     final title = _titleController.text.trim();
-    final content = _contentController.text.trim();
+    final subtitle = _subtitleController.text.trim();
+    final part1 = _part1Controller.text.trim();
+    final part2 = _part2Controller.text.trim();
+    final quote = _showQuote ? _quoteController.text.trim() : '';
+    final quoteAuthor = _showQuote ? _quoteAuthorController.text.trim() : '';
 
-    if (title.isEmpty || content.isEmpty) {
+    if (title.isEmpty || subtitle.isEmpty || part1.isEmpty || part2.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Judul dan isi cerita tidak boleh kosong!', style: GoogleFonts.plusJakartaSans()),
+          content: Text('Judul, subjudul, dan isi cerita harus diisi!', style: GoogleFonts.plusJakartaSans()),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -123,8 +171,8 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
       return;
     }
 
-    // Content filter for admin submissions too
-    final filterError = ContentFilterService.validate(title, content);
+    // Content filter
+    final filterError = ContentFilterService.validate(title, '$subtitle $part1 $part2');
     if (filterError != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -140,54 +188,83 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
       return;
     }
 
-    final imagePath = _uploadedImageUrl ?? 'assets/images/sangkuriang.png';
-    final totalWords = content.split(' ').length;
+    final imagePath = _uploadedImageUrl ?? _imageUrlController.text.trim();
+    final finalImagePath = imagePath.isNotEmpty ? imagePath : 'assets/images/sangkuriang.png';
+    final totalWords = part1.split(' ').length + part2.split(' ').length;
     final minutes = (totalWords / 150).ceil();
     final readTime = '$minutes min baca';
-
-    // Split content into part1 and part2
-    final halfLength = (content.length / 2).ceil();
-    final part1 = content.substring(0, halfLength);
-    final part2 = content.substring(halfLength);
 
     setState(() => _isLoading = true);
 
     try {
-      final newStory = StoryModel(
-        id: '',
-        title: title,
-        subtitle: 'Kisantara', // Admin stories are credited to Kisantara
-        imagePath: imagePath,
-        category: _selectedCategory,
-        readTime: readTime,
-        part1: part1,
-        quote: '',
-        quoteAuthor: '',
-        part2: part2,
-        authorId: 'admin',
-        authorName: 'Kisantara',
-        timestamp: DateTime.now(),
-        status: 'approved', // Admin stories are immediately approved
-      );
-
-      await _databaseService.addStory(newStory);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cerita "$title" berhasil dipublikasikan!', style: GoogleFonts.plusJakartaSans()),
-            backgroundColor: const Color(0xFF00743B),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        );
-        _titleController.clear();
-        _contentController.clear();
-        _imageUrlController.clear();
-        setState(() {
-          _imageName = null;
-          _uploadedImageUrl = null;
+      if (widget.editStory != null) {
+        // Update existing story
+        await _databaseService.updateStory(widget.editStory!.id, {
+          'title': title,
+          'subtitle': subtitle,
+          'imagePath': finalImagePath,
+          'category': _selectedCategory,
+          'readTime': readTime,
+          'part1': part1,
+          'quote': quote,
+          'quoteAuthor': quoteAuthor,
+          'part2': part2,
         });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cerita "$title" berhasil diperbarui!', style: GoogleFonts.plusJakartaSans()),
+              backgroundColor: const Color(0xFF00743B),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+          Navigator.of(context).pop(); // Go back after editing
+        }
+      } else {
+        // Add new story
+        final newStory = StoryModel(
+          id: '',
+          title: title,
+          subtitle: subtitle,
+          imagePath: finalImagePath,
+          category: _selectedCategory,
+          readTime: readTime,
+          part1: part1,
+          quote: quote,
+          quoteAuthor: quoteAuthor,
+          part2: part2,
+          authorId: 'admin',
+          authorName: 'Kisantara',
+          timestamp: DateTime.now(),
+          status: 'approved',
+        );
+
+        await _databaseService.addStory(newStory);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cerita "$title" berhasil dipublikasikan!', style: GoogleFonts.plusJakartaSans()),
+              backgroundColor: const Color(0xFF00743B),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+          _titleController.clear();
+          _subtitleController.clear();
+          _part1Controller.clear();
+          _part2Controller.clear();
+          _imageUrlController.clear();
+          _quoteController.clear();
+          _quoteAuthorController.clear();
+          setState(() {
+            _imageName = null;
+            _uploadedImageUrl = null;
+            _showQuote = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -209,8 +286,17 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.editStory != null;
     return Scaffold(
       backgroundColor: const Color(0xFFFEFDF1),
+      appBar: isEditing ? AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF065F46)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ) : null,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
@@ -218,7 +304,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tambah Cerita',
+                isEditing ? 'Edit Cerita' : 'Tambah Cerita',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
@@ -228,7 +314,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Tambahkan dongeng dan cerita rakyat baru ke koleksi Kisantara.',
+                isEditing ? 'Perbarui informasi dan isi cerita ini.' : 'Tambahkan dongeng dan cerita rakyat baru ke koleksi Kisantara.',
                 style: GoogleFonts.beVietnamPro(fontSize: 14, color: const Color(0xFF64655C)),
               ),
               const SizedBox(height: 32),
@@ -240,6 +326,16 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
                 controller: _titleController,
                 hint: 'Contoh: Malin Kundang',
                 icon: Icons.title_rounded,
+              ),
+              const SizedBox(height: 20),
+
+              // ── Subjudul ──
+              _sectionLabel('Subjudul Cerita'),
+              const SizedBox(height: 10),
+              _buildTextField(
+                controller: _subtitleController,
+                hint: 'Contoh: Kisah Anak Durhaka',
+                icon: Icons.subtitles_rounded,
               ),
               const SizedBox(height: 24),
 
@@ -453,37 +549,52 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
               ],
               const SizedBox(height: 24),
 
-              // ── Isi Cerita ──
-              _sectionLabel('Isi Dongeng'),
+              // ── Isi Cerita 1 ──
+              _sectionLabel('Isi Cerita - Bagian 1'),
               const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF064E3B).withOpacity(0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _contentController,
-                  maxLines: 10,
-                  style: GoogleFonts.beVietnamPro(
-                    color: const Color(0xFF373830),
-                    fontSize: 14,
-                    height: 1.6,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Tulis isi dongeng di sini...',
-                    hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(20),
-                  ),
-                ),
+              _buildTextArea(
+                controller: _part1Controller,
+                hint: 'Tulis paragraf awal cerita Anda di sini...',
+              ),
+              const SizedBox(height: 24),
+
+              // ── Isi Cerita 2 ──
+              _sectionLabel('Isi Cerita - Bagian 2'),
+              const SizedBox(height: 10),
+              _buildTextArea(
+                controller: _part2Controller,
+                hint: 'Tulis paragraf akhir/lanjutan cerita Anda di sini...',
+              ),
+              const SizedBox(height: 24),
+
+              // ── Kutipan Favorit (Opsional) ──
+              _buildQuoteToggle(),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: _showQuote
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          _sectionLabel('Kutipan Favorit'),
+                          const SizedBox(height: 10),
+                          _buildTextField(
+                            controller: _quoteController,
+                            hint: 'Contoh: Jangan pernah melupakan jasa orang tua.',
+                            icon: Icons.format_quote_rounded,
+                          ),
+                          const SizedBox(height: 16),
+                          _sectionLabel('Tokoh Kutipan'),
+                          const SizedBox(height: 10),
+                          _buildTextField(
+                            controller: _quoteAuthorController,
+                            hint: 'Contoh: Malin Kundang',
+                            icon: Icons.person_outline_rounded,
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
               ),
               const SizedBox(height: 36),
 
@@ -500,7 +611,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
                         )
                       : const Icon(Icons.save_rounded),
                   label: Text(
-                    _isLoading ? 'Menyimpan...' : 'Simpan Cerita',
+                    _isLoading ? 'Menyimpan...' : (isEditing ? 'Simpan Perubahan' : 'Simpan Cerita'),
                     style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -514,6 +625,72 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Toggle untuk kutipan opsional — desain sama persis dengan write_story_screen
+  Widget _buildQuoteToggle() {
+    return GestureDetector(
+      onTap: () => setState(() => _showQuote = !_showQuote),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: _showQuote ? const Color(0xFFD1FAE5) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _showQuote ? const Color(0xFF00743B) : const Color(0xFFE5E7EB),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: _showQuote ? const Color(0xFF00743B) : Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: _showQuote ? const Color(0xFF00743B) : const Color(0xFFD1D5DB),
+                  width: 2,
+                ),
+              ),
+              child: _showQuote
+                  ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tambah Kutipan Favorit',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _showQuote ? const Color(0xFF065F46) : const Color(0xFF374151),
+                  ),
+                ),
+                Text(
+                  'Opsional — kalimat berkesan dari cerita ini',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 12,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Icon(
+              Icons.format_quote_rounded,
+              color: _showQuote ? const Color(0xFF059669) : const Color(0xFFD1D5DB),
+              size: 24,
+            ),
+          ],
         ),
       ),
     );
@@ -542,7 +719,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
         border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.02),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -557,6 +734,36 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
           prefixIcon: Icon(icon, color: const Color(0xFF059669)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
+      ),
+    );
+  }
+  Widget _buildTextArea({
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF064E3B).withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: 6,
+        style: GoogleFonts.beVietnamPro(color: const Color(0xFF373830), fontSize: 14, height: 1.6),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(20),
         ),
       ),
     );

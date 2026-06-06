@@ -76,7 +76,9 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                             bottomRight: Radius.circular(64),
                           ),
                           image: DecorationImage(
-                            image: AssetImage(story.imagePath),
+                            image: story.imagePath.startsWith('http')
+                                ? NetworkImage(story.imagePath) as ImageProvider
+                                : AssetImage(story.imagePath),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -316,7 +318,9 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                       )
                     ],
                     image: DecorationImage(
-                      image: AssetImage(story.imagePath),
+                      image: story.imagePath.startsWith('http')
+                          ? NetworkImage(story.imagePath) as ImageProvider
+                          : AssetImage(story.imagePath),
                       fit: BoxFit.cover,
                     ),
                   ),
