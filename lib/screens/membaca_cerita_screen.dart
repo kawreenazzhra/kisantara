@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/story_model.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
@@ -16,11 +17,36 @@ class MembacaCeritaScreen extends StatefulWidget {
 class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
   final _authService = AuthService();
   final _databaseService = DatabaseService();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _recordRecentRead();
+    _loadScrollPosition();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _loadScrollPosition() async {
+    final prefs = await SharedPreferences.getInstance();
+    final offset = prefs.getDouble('scroll_${widget.story.id}') ?? 0.0;
+    if (offset > 0.0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(offset);
+        }
+      });
+    }
+  }
+
+  void _saveScrollPosition(double offset) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('scroll_${widget.story.id}', offset);
   }
 
   void _recordRecentRead() async {
@@ -59,11 +85,19 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
       body: Stack(
         children: [
           // Main - Reading Canvas
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Hero Section
+          NotificationListener<ScrollEndNotification>(
+            onNotification: (notification) {
+              if (notification.metrics.axis == Axis.vertical) {
+                _saveScrollPosition(_scrollController.offset);
+              }
+              return false;
+            },
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Hero Section
                 SizedBox(
                   height: 618,
                   child: Stack(
@@ -406,106 +440,87 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                         ],
                       ),
                       const SizedBox(height: 48),
-                      // Interaction Section
-                      Container(
-                         padding: const EdgeInsets.all(40),
-                         width: double.infinity,
-                         decoration: BoxDecoration(
-                           color: Colors.white,
-                           border: const Border(top: BorderSide(color: Colors.white)),
-                           borderRadius: BorderRadius.circular(48),
-                           boxShadow: [
-                             BoxShadow(
-                               color: const Color(0xFF064E3B).withOpacity(0.05),
-                               blurRadius: 25,
-                               offset: const Offset(0, 20),
-                               spreadRadius: -5,
-                             ),
-                           ],
-                         ),
-                         child: Column(
-                           children: [
-                             Text(
-                               'Lanjut ke cerita berikutnya?',
-                               style: GoogleFonts.plusJakartaSans(
-                                 fontSize: 30,
-                                 fontWeight: FontWeight.w700,
-                                 height: 1.2,
-                                 color: const Color(0xFF373830),
-                               ),
-                               textAlign: TextAlign.center,
-                             ),
-                             const SizedBox(height: 24),
-                             ElevatedButton(
-                               onPressed: () {},
-                               style: ElevatedButton.styleFrom(
-                                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                 backgroundColor: const Color(0xFF00743B),
-                                 foregroundColor: Colors.white,
-                                 shape: RoundedRectangleBorder(
-                                   borderRadius: BorderRadius.circular(48),
-                                 ),
-                                 elevation: 10,
-                                 shadowColor: const Color(0xFF064E3B).withOpacity(0.5),
-                                 minimumSize: const Size(double.infinity, 0),
-                               ),
-                               child: Text(
-                                 'Baca Lanjutan',
-                                 style: GoogleFonts.beVietnamPro(
-                                   fontSize: 18,
-                                   fontWeight: FontWeight.w700,
-                                 ),
-                               ),
-                             ),
-                             if (user != null)
-                               StreamBuilder<bool>(
-                                 stream: _databaseService.isStoryBookmarked(user.uid, story.id),
-                                 builder: (context, snapshot) {
-                                   final isBookmarked = snapshot.data ?? false;
-                                   return TextButton(
-                                     onPressed: _toggleBookmark,
-                                     style: TextButton.styleFrom(
-                                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                       backgroundColor: isBookmarked ? const Color(0xFFFEE2E2) : const Color(0xFFABD6FF),
-                                       foregroundColor: isBookmarked ? const Color(0xFFDC2626) : const Color(0xFF004B74),
-                                       shape: RoundedRectangleBorder(
-                                         borderRadius: BorderRadius.circular(48),
-                                       ),
-                                       minimumSize: const Size(double.infinity, 0),
-                                     ),
-                                     child: Text(
-                                       isBookmarked ? 'Batal Simpan' : 'Simpan Cerita',
-                                       style: GoogleFonts.beVietnamPro(
-                                         fontSize: 18,
-                                         fontWeight: FontWeight.w700,
-                                       ),
-                                     ),
-                                   );
-                                 },
-                               )
-                             else
-                               TextButton(
-                                 onPressed: () {},
-                                 style: TextButton.styleFrom(
-                                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                   backgroundColor: const Color(0xFFABD6FF),
-                                   foregroundColor: const Color(0xFF004B74),
-                                   shape: RoundedRectangleBorder(
-                                     borderRadius: BorderRadius.circular(48),
-                                   ),
-                                   minimumSize: const Size(double.infinity, 0),
-                                 ),
-                                 child: Text(
-                                   'Simpan Cerita',
-                                   style: GoogleFonts.beVietnamPro(
-                                     fontSize: 18,
-                                     fontWeight: FontWeight.w700,
-                                   ),
-                                 ),
-                               ),
-                           ],
-                         ),
-                      ),
+                       // Interaction Section
+                       Container(
+                          padding: const EdgeInsets.all(40),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: const Border(top: BorderSide(color: Colors.white)),
+                            borderRadius: BorderRadius.circular(48),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF064E3B).withOpacity(0.05),
+                                blurRadius: 25,
+                                offset: const Offset(0, 20),
+                                spreadRadius: -5,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Bagaimana ceritanya?',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
+                                  color: const Color(0xFF373830),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              if (user != null)
+                                StreamBuilder<bool>(
+                                  stream: _databaseService.isStoryBookmarked(user.uid, story.id),
+                                  builder: (context, snapshot) {
+                                    final isBookmarked = snapshot.data ?? false;
+                                    return TextButton.icon(
+                                      onPressed: _toggleBookmark,
+                                      icon: Icon(isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                        backgroundColor: isBookmarked ? const Color(0xFFFEE2E2) : const Color(0xFFABD6FF),
+                                        foregroundColor: isBookmarked ? const Color(0xFFDC2626) : const Color(0xFF004B74),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(48),
+                                        ),
+                                        minimumSize: const Size(double.infinity, 0),
+                                      ),
+                                      label: Text(
+                                        isBookmarked ? 'Batal Simpan Cerita' : 'Simpan Cerita Ini',
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              else
+                                TextButton.icon(
+                                  onPressed: () {},
+                                  icon: const Icon(Icons.bookmark_border_rounded),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                    backgroundColor: const Color(0xFFABD6FF),
+                                    foregroundColor: const Color(0xFF004B74),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(48),
+                                    ),
+                                    minimumSize: const Size(double.infinity, 0),
+                                  ),
+                                  label: Text(
+                                    'Simpan Cerita Ini',
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                       ),
                     ],
                   ),
                 ),
@@ -534,6 +549,7 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
               ],
             ),
           ),
+          ), // Closing NotificationListener
           
           // Floating Navigation Controls (Top)
           Positioned(
@@ -549,11 +565,6 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                 ),
                 Row(
                   children: [
-                    _GlassButton(
-                      icon: Icons.text_fields_rounded,
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 12),
                     if (user != null)
                       StreamBuilder<bool>(
                         stream: _databaseService.isStoryBookmarked(user.uid, story.id),
@@ -573,48 +584,6 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                   ],
                 ),
               ],
-            ),
-          ),
-          
-          // Reading Mode Floating Quick Toolbar (Bottom)
-          Positioned(
-            bottom: 32,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(9999),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    height: 75,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      border: Border.all(color: Colors.white.withOpacity(0.5)),
-                      borderRadius: BorderRadius.circular(9999),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF022C22).withOpacity(0.2),
-                          blurRadius: 50,
-                          offset: const Offset(0, 25),
-                          spreadRadius: -12,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const _ToolbarButton(icon: Icons.skip_previous_rounded, label: 'PREV'),
-                        Container(width: 1, height: 32, color: const Color(0xFFBABAAF).withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 24)),
-                        const _ToolbarButton(icon: Icons.play_arrow_rounded, label: 'PLAY'),
-                        Container(width: 1, height: 32, color: const Color(0xFFBABAAF).withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 24)),
-                        const _ToolbarButton(icon: Icons.skip_next_rounded, label: 'NEXT'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
           ),
         ],
@@ -651,34 +620,6 @@ class _GlassButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ToolbarButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _ToolbarButton({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: const Color(0xFF64655C), size: 22),
-        const SizedBox(height: 4),
-        Text(
-           label,
-           style: GoogleFonts.beVietnamPro(
-             fontSize: 10,
-             fontWeight: FontWeight.w700,
-             letterSpacing: -0.5,
-             color: const Color(0xFF64655C),
-           ),
-        ),
-      ],
     );
   }
 }

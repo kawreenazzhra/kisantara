@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/story_model.dart';
 import '../../services/database_service.dart';
+import '../membaca_cerita_screen.dart';
 import 'admin_form_screen.dart';
 
 class AdminManageScreen extends StatefulWidget {
@@ -469,13 +470,46 @@ class _PendingStoriesTab extends StatelessWidget {
 
                   // Story preview
                   if (story.part1.isNotEmpty)
-                    Text(
-                      story.part1.length > 180 ? '${story.part1.substring(0, 180)}...' : story.part1,
-                      style: GoogleFonts.beVietnamPro(
-                        fontSize: 13,
-                        color: const Color(0xFF64655C),
-                        height: 1.5,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          story.part1.length > 180 ? '${story.part1.substring(0, 180)}...' : story.part1,
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 13,
+                            color: const Color(0xFF64655C),
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MembacaCeritaScreen(story: story),
+                            ),
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Baca Selengkapnya',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF2563EB),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF2563EB)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   const SizedBox(height: 16),
 
