@@ -1,65 +1,68 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
+/// StorageService menggunakan Cloudinary (bukan Firebase Storage)
+/// - Gratis: 25 GB storage + 25 GB bandwidth/bulan
+/// - Cepat: CDN global, otomatis optimasi gambar
+/// - Mudah: REST API biasa, tidak perlu SDK
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  static const String _cloudName = 'dau1ypcyi';
+  static const String _uploadPreset = 'kisantara_unsigned';
+  static const String _uploadUrl =
+      'https://api.cloudinary.com/v1_1/$_cloudName/image/upload';
 
-  // Upload byte data directly
-  Future<String> uploadBytes(Uint8List bytes, String fileName, String mimeType) async {
-    final ref = _storage.ref().child('story_covers').child(fileName);
-    final uploadTask = ref.putData(
-      bytes,
-      SettableMetadata(contentType: mimeType),
+  /// Upload raw byte data ke Cloudinary. Returns secure CDN URL.
+  Future<String> uploadBytes(
+      Uint8List bytes, String fileName, String mimeType) async {
+    final dio = Dio();
+    // Cloudinary menerima base64 data URI langsung
+    final base64Data = base64Encode(bytes);
+    final dataUri = 'data:$mimeType;base64,$base64Data';
+    final formData = FormData.fromMap({
+      'file': dataUri,
+      'upload_preset': _uploadPreset,
+      'folder': 'kisantara_covers',
+      'quality': 'auto',      // Cloudinary otomatis kompres
+      'fetch_format': 'auto', // Cloudinary auto pilih format terbaik (WebP, dll)
+    });
+    final response = await dio.post(
+      _uploadUrl,
+      data: formData,
+      options: Options(
+        sendTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
     );
-    final snapshot = await uploadTask;
-    return await snapshot.ref.getDownloadURL();
+    if (response.statusCode == 200) {
+      final secureUrl = response.data['secure_url'] as String;
+      return secureUrl;
+    }
+    throw Exception(
+        'Cloudinary upload gagal (${response.statusCode}): ${response.data}');
   }
 
-  /// Opens a file picker dialog and uploads the selected image to Firebase Storage.
-  /// Returns the download URL, or null if the user cancelled.
+  /// Membuka galeri foto, memilih gambar, lalu mengupload ke Cloudinary.
+  /// Returns CDN URL gambar, atau null jika user membatalkan.
   Future<String?> pickAndUploadImage() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-        withData: true, // Important for web — loads bytes directly
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,  // Kompres di device sebelum upload
+        maxWidth: 900,
+        maxHeight: 900,
       );
+      if (image == null) return null; // User batal pilih
 
-      if (result == null || result.files.isEmpty) return null;
-
-      final file = result.files.first;
-      final bytes = file.bytes;
-      if (bytes == null) return null;
-
-      final ext = file.extension?.toLowerCase() ?? 'jpg';
-      final mimeType = ext == 'png' ? 'image/png' : 'image/jpeg';
+      final bytes = await image.readAsBytes();
+      final name = image.name.toLowerCase();
+      final ext = name.contains('.') ? name.split('.').last : 'jpg';
+      final mimeType = (ext == 'png') ? 'image/png' : 'image/jpeg';
       final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.$ext';
-
       return await uploadBytes(bytes, fileName, mimeType);
     } catch (e) {
-      print('Error picking/uploading image: $e');
-      rethrow;
-    }
-  }
-
-  // Upload a simulation asset (reads a local asset file and uploads it to Firebase Storage)
-  Future<String> uploadSimulationAsset(String assetPath) async {
-    try {
-      final byteData = await rootBundle.load(assetPath);
-      final bytes = byteData.buffer.asUint8List();
-
-      final fileName = 'simulated_${DateTime.now().millisecondsSinceEpoch}_${assetPath.split('/').last}';
-
-      String mimeType = 'image/png';
-      if (assetPath.endsWith('.jpg') || assetPath.endsWith('.jpeg')) {
-        mimeType = 'image/jpeg';
-      }
-
-      return await uploadBytes(bytes, fileName, mimeType);
-    } catch (e) {
-      print('Error uploading simulation asset: $e');
       rethrow;
     }
   }
