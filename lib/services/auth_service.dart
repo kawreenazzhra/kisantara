@@ -47,6 +47,7 @@ class AuthService {
         role: role,
         bio: '',
         language: 'Bahasa Indonesia',
+        photoUrl: '',
         savedStories: [],
         recentlyRead: [],
       );
@@ -90,11 +91,16 @@ class AuthService {
     required String uid,
     required String penName,
     required String bio,
+    String? photoUrl,
   }) async {
-    await _db.collection('users').doc(uid).update({
+    final Map<String, dynamic> data = {
       'penName': penName,
       'bio': bio,
-    });
+    };
+    if (photoUrl != null) {
+      data['photoUrl'] = photoUrl;
+    }
+    await _db.collection('users').doc(uid).update(data);
   }
 
   // Update User Language

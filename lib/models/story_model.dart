@@ -50,6 +50,8 @@ class StoryModel {
         return const Color(0xFFDDD6FE); // Light purple
       case 'FABEL':
         return const Color(0xFFC6F6D5); // Light green
+      case 'FANTASI':
+        return const Color(0xFFFFD1E6); // Light pink/magenta
       default:
         return const Color(0xFFFED023); // Default gold
     }
@@ -64,6 +66,8 @@ class StoryModel {
         return const Color(0xFF5B21B6);
       case 'FABEL':
         return const Color(0xFF065F46);
+      case 'FANTASI':
+        return const Color(0xFF9C0E56); // Deep magenta
       default:
         return const Color(0xFF594700);
     }

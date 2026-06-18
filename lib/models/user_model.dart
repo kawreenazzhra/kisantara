@@ -7,6 +7,7 @@ class UserModel {
   final String role; // 'admin' or 'user'
   final String bio;
   final String language;
+  final String photoUrl;
   final List<String> savedStories;
   final List<String> recentlyRead;
 
@@ -17,6 +18,7 @@ class UserModel {
     required this.role,
     required this.bio,
     required this.language,
+    required this.photoUrl,
     required this.savedStories,
     required this.recentlyRead,
   });
@@ -31,6 +33,7 @@ class UserModel {
       role: data['role'] ?? 'user',
       bio: data['bio'] ?? '',
       language: data['language'] ?? 'Bahasa Indonesia',
+      photoUrl: data['photoUrl'] ?? '',
       savedStories: List<String>.from(data['savedStories'] ?? []),
       recentlyRead: List<String>.from(data['recentlyRead'] ?? []),
     );
@@ -44,6 +47,7 @@ class UserModel {
       'role': role,
       'bio': bio,
       'language': language,
+      'photoUrl': photoUrl,
       'savedStories': savedStories,
       'recentlyRead': recentlyRead,
     };

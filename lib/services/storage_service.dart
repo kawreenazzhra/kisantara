@@ -241,6 +241,7 @@ class StorageService {
     'LEGENDA': 'legendary origin story',
     'MITOS': 'mythological tale',
     'FABEL': 'animal fable',
+    'FANTASI': 'fantasy story',
     'DONGENG': 'fairy tale',
     'SAGE': 'heroic saga',
   };
@@ -362,6 +363,9 @@ class StorageService {
           break;
         case 'MITOS':
           scene = 'a mystical foggy forest with ethereal glowing light';
+          break;
+        case 'FANTASI':
+          scene = 'a magical wonderland with floating islands and glowing light';
           break;
         case 'DONGENG':
           scene = 'a magical enchanted forest with glowing fireflies';

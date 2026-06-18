@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import '../../services/auth_service.dart';
 import '../../models/user_model.dart';
+import '../../services/storage_service.dart';
 
 class EditProfilScreen extends StatefulWidget {
   const EditProfilScreen({super.key});
@@ -16,6 +19,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   final _bioController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = true;
+  XFile? _imageFile;
+  Uint8List? _imageBytes;
+  String _currentPhotoUrl = '';
 
   @override
   void initState() {
@@ -31,12 +37,41 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         _nameController.text = profile.penName;
         _emailController.text = profile.email;
         _bioController.text = profile.bio;
+        _currentPhotoUrl = profile.photoUrl;
       }
     }
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  void _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 500,
+        maxHeight: 500,
+      );
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          _imageFile = image;
+          _imageBytes = bytes;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memilih gambar: $e', style: GoogleFonts.plusJakartaSans()),
+            backgroundColor: const Color(0xFFDC2626),
+          ),
+        );
+      }
     }
   }
 
@@ -47,10 +82,22 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         _isLoading = true;
       });
       try {
+        String? newPhotoUrl;
+        if (_imageFile != null && _imageBytes != null) {
+          final storageService = StorageService();
+          final name = _imageFile!.name.toLowerCase();
+          final ext = name.contains('.') ? name.split('.').last : 'jpg';
+          final mimeType = (ext == 'png') ? 'image/png' : 'image/jpeg';
+          final fileName = 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+          
+          newPhotoUrl = await storageService.uploadBytes(_imageBytes!, fileName, mimeType);
+        }
+
         await _authService.updateUserProfile(
           uid: user.uid,
           penName: _nameController.text.trim(),
           bio: _bioController.text.trim(),
+          photoUrl: newPhotoUrl,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -117,34 +164,49 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Profile Picture Section
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF75F39C), width: 4),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/user_avatar.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.person, size: 60, color: Color(0xFF00743B)),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(
+                            child: _imageBytes != null
+                                ? Image.memory(
+                                    _imageBytes!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : (_currentPhotoUrl.isNotEmpty
+                                    ? Image.network(
+                                        _currentPhotoUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            Image.asset(
+                                              'assets/images/user_avatar.png',
+                                              fit: BoxFit.cover,
+                                            ),
+                                      )
+                                    : Image.asset(
+                                        'assets/images/user_avatar.png',
+                                        fit: BoxFit.cover,
+                                      )),
                           ),
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00743B),
-                          shape: BoxShape.circle,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF00743B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
                         ),
-                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 32),
 

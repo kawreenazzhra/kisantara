@@ -34,6 +34,7 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       case 'LEGENDA': return const Color(0xFFBFD9FE);
       case 'MITOS': return const Color(0xFFDDD6FE);
       case 'FABEL': return const Color(0xFFC6F6D5);
+      case 'FANTASI': return const Color(0xFFFFD1E6);
       default: return const Color(0xFFE5E7EB);
     }
   }
@@ -43,6 +44,7 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       case 'LEGENDA': return const Color(0xFF1D5AA8);
       case 'MITOS': return const Color(0xFF5B21B6);
       case 'FABEL': return const Color(0xFF065F46);
+      case 'FANTASI': return const Color(0xFF9C0E56);
       default: return const Color(0xFF374151);
     }
   }

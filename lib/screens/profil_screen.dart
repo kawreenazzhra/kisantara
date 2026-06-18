@@ -45,35 +45,47 @@ class ProfilScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 16),
                   // Avatar
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: const Color(0xFF75F39C), width: 3),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/user_avatar.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.person, size: 50, color: Color(0xFF00743B)),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EditProfilScreen()),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(
+                            child: (userProfile?.photoUrl != null && userProfile!.photoUrl.isNotEmpty)
+                                ? Image.network(
+                                    userProfile.photoUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Image.asset(
+                                          'assets/images/user_avatar.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                  )
+                                : Image.asset(
+                                    'assets/images/user_avatar.png',
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00743B),
-                          shape: BoxShape.circle,
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF00743B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 14),
                         ),
-                        child: const Icon(Icons.edit, color: Colors.white, size: 14),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(

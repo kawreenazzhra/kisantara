@@ -31,7 +31,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
   bool _showQuote = false; // Kutipan opsional
   String _authorName = 'Anonim';
 
-  final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL'];
+  final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL', 'FANTASI'];
   final _authService = AuthService();
   final _databaseService = DatabaseService();
   final _storageService = StorageService();

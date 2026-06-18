@@ -32,7 +32,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
   final DatabaseService _databaseService = DatabaseService();
   final StorageService _storageService = StorageService();
 
-  final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL'];
+  final List<String> _categories = ['LEGENDA', 'MITOS', 'FABEL', 'FANTASI'];
 
   @override
   void initState() {

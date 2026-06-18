@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'membaca_cerita_screen.dart';
+import 'profile/edit_profil_screen.dart';
 import '../services/database_service.dart';
 import '../models/story_model.dart';
+import '../services/auth_service.dart';
+import '../models/user_model.dart';
 
-final List<String> _categories = ['Semua', 'Mitos', 'Legenda', 'Fabel'];
+final List<String> _categories = ['Semua', 'Mitos', 'Legenda', 'Fabel', 'Fantasi'];
 
 class JelajahScreen extends StatefulWidget {
   const JelajahScreen({super.key});
@@ -540,23 +543,59 @@ class _TopAppBar extends StatelessWidget {
                   ],
                 ),
                 // Right: Avatar
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF75F39C),
-                      width: 2,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfilScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
                     ),
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/images/user_avatar.png',
-                      fit: BoxFit.cover,
+                    child: ClipOval(
+                      child: Builder(
+                        builder: (context) {
+                          final authService = AuthService();
+                          final currentUser = authService.currentUser;
+                          if (currentUser == null) {
+                            return Image.asset(
+                              'assets/images/user_avatar.png',
+                              fit: BoxFit.cover,
+                            );
+                          }
+                          return StreamBuilder<UserModel?>(
+                            stream: authService.getUserProfileStream(currentUser.uid),
+                            builder: (context, snapshot) {
+                              final photoUrl = snapshot.data?.photoUrl;
+                              if (photoUrl != null && photoUrl.isNotEmpty) {
+                                  return Image.network(
+                                    photoUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Image.asset(
+                                          'assets/images/user_avatar.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                  );
+                              }
+                              return Image.asset(
+                                'assets/images/user_avatar.png',
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
+
               ],
             ),
           ),

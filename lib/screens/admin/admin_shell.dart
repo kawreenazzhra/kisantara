@@ -77,12 +77,18 @@ class _AdminShellState extends State<AdminShell> {
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: Color(0xFF00743B),
-                shape: BoxShape.circle,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.admin_panel_settings_rounded,
-                  color: Colors.white, size: 18),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  'https://res.cloudinary.com/dau1ypcyi/image/upload/v1781789690/kisantara_assets/ndu35jwh5w810tnlgvru.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                ),
+              ),
             ),
             const SizedBox(width: 10),
             Text(
