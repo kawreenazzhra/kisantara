@@ -136,10 +136,10 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
 
     setState(() => _isLoading = true);
 
-    final prompt = "indonesian folklore story about $title, category $_selectedCategory, digital art style, beautiful detailed fantasy illustration";
+    final prompt = _storageService.buildSmartPrompt(title, _selectedCategory);
 
     try {
-      final generatedUrl = await _storageService.generateAndUploadAICover(prompt);
+      final generatedUrl = await _storageService.generateAndUploadAICover(prompt, title: title);
 
       setState(() {
         _uploadedImageUrl = generatedUrl;
