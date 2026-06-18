@@ -501,12 +501,33 @@ class _TopAppBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Left: hamburger + brand name
+                // Left: Logo + Brand Name
                 Row(
                   children: [
-                    Icon(Icons.menu_rounded,
-                        color: const Color(0xFF047857), size: 24),
-                    const SizedBox(width: 16),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF064E3B).withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          'https://res.cloudinary.com/dau1ypcyi/image/upload/v1781789690/kisantara_assets/ndu35jwh5w810tnlgvru.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Text(
                       'Kisantara',
                       style: GoogleFonts.plusJakartaSans(
@@ -518,7 +539,7 @@ class _TopAppBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                // Right: avatar
+                // Right: Avatar
                 Container(
                   width: 40,
                   height: 40,
