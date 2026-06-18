@@ -253,86 +253,85 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                                 ),
                               ),
                             ),
-                            Transform.rotate(
-                              angle: -0.0174533, // -1 degree
-                              child: Container(
-                                padding: const EdgeInsets.all(13),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFABD6FF).withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(48),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(32),
-                                  child: story.imagePath.startsWith('http')
-                                      ? Image.network(
-                                          story.imagePath,
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(Icons.image_not_supported_rounded, size: 50),
-                                        )
-                                      : Image.asset(
-                                          story.imagePath, 
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                        ),
-                                ),
+                            Container(
+                              padding: const EdgeInsets.all(13),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFABD6FF).withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(48),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(32),
+                                child: story.imagePath.startsWith('http')
+                                    ? Image.network(
+                                        story.imagePath,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.image_not_supported_rounded, size: 50),
+                                      )
+                                    : Image.asset(
+                                        story.imagePath, 
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 48),
-                      // Blockquote
-                      Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFBFAED),
-                          border: Border(
-                            left: BorderSide(color: Color(0xFF75F39C), width: 8),
+                      if (story.quote.trim().isNotEmpty) ...[
+                        const SizedBox(height: 48),
+                        // Blockquote
+                        Container(
+                          padding: const EdgeInsets.all(32),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFBFAED),
+                            border: Border(
+                              left: BorderSide(color: Color(0xFF75F39C), width: 8),
+                            ),
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(48),
+                              bottomRight: Radius.circular(48),
+                            ),
                           ),
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(48),
-                            bottomRight: Radius.circular(48),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: 0,
+                                top: -10,
+                                child: Icon(Icons.format_quote_rounded, color: const Color(0xFF00743B).withOpacity(0.15), size: 64),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    story.quote,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FontStyle.italic,
+                                      height: 1.62,
+                                      color: const Color(0xFF006633),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    story.quoteAuthor,
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      fontStyle: FontStyle.italic,
+                                      color: const Color(0xFF64655C),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: 0,
-                              top: -10,
-                              child: Icon(Icons.format_quote_rounded, color: const Color(0xFF00743B).withOpacity(0.15), size: 64),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  story.quote,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FontStyle.italic,
-                                    height: 1.62,
-                                    color: const Color(0xFF006633),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  story.quoteAuthor,
-                                  style: GoogleFonts.beVietnamPro(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FontStyle.italic,
-                                    color: const Color(0xFF64655C),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                       const SizedBox(height: 48),
                     ],
                   ),
@@ -378,66 +377,6 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                           height: 1.8,
                           color: const Color(0xFF373830),
                         ),
-                      ),
-                      const SizedBox(height: 48),
-                      // Progress Indicator (Growing Vine Style)
-                      Column(
-                        children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.centerLeft,
-                            children: [
-                              Container(
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE9E9DA),
-                                  borderRadius: BorderRadius.circular(9999),
-                                ),
-                              ),
-                              FractionallySizedBox(
-                                widthFactor: 0.35,
-                                child: Container(
-                                  height: 12,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF00743B), Color(0xFF75F39C)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(9999),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                left: MediaQuery.of(context).size.width * 0.35 - 32,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF7A6200),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 4),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'BAGIAN 1 SELESAI',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.4,
-                              color: const Color(0xFF64655C),
-                            ),
-                          ),
-                        ],
                       ),
                       const SizedBox(height: 48),
                        // Interaction Section

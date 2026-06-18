@@ -509,6 +509,40 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
                   ),
                 ],
               ),
+              Container(
+                margin: const EdgeInsets.only(top: 14),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFFDE68A),
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '* Mohon maaf jika gambar yang dihasilkan oleh AI kami tidak sesuai dengan judul Anda. Silakan unggah gambar yang dibuat sendiri agar sesuai dengan cerita yang dibuat.',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFB45309),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               if (_uploadedImageUrl != null && _uploadedImageUrl!.startsWith('http')) ...[
                 const SizedBox(height: 16),
                 Center(
