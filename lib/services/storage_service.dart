@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// StorageService menggunakan Cloudinary (bukan Firebase Storage)
@@ -73,15 +74,15 @@ class StorageService {
   }
 
   /// Generate cover dengan AI menggunakan beberapa fallback:
-  /// 1. Hugging Face Inference API (FLUX.1-schnell — gratis & cepat)
+  /// 1. DeepAI Text-to-Image API (gratis, stabil)
   /// 2. Pollinations.ai (tanpa API key)
   /// 3. Placeholder dari picsum.photos (fallback terakhir)
   Future<String> generateAndUploadAICover(String prompt) async {
-    // ── Strategi 1: Hugging Face Inference API ──
+    // ── Strategi 1: DeepAI Text-to-Image API ──
     try {
-      return await _generateViaHuggingFace(prompt);
+      return await _generateViaDeepAI(prompt);
     } catch (e) {
-      debugPrint('[AI Cover] HuggingFace gagal: $e — mencoba Pollinations...');
+      debugPrint('[AI Cover] DeepAI gagal: $e — mencoba Pollinations...');
     }
 
     // ── Strategi 2: Pollinations.ai (tanpa API key) ──
@@ -97,48 +98,60 @@ class StorageService {
     return await _generatePlaceholder();
   }
 
-  /// Strategi 1: Hugging Face standard Inference API
-  Future<String> _generateViaHuggingFace(String prompt) async {
+  /// Strategi 1: DeepAI Text-to-Image API
+  /// Gratis dengan demo API key, stabil dan cepat.
+  Future<String> _generateViaDeepAI(String prompt) async {
     final dio = Dio();
 
-    // Gunakan FLUX.1-schnell (gratis, cepat ~2-4 detik)
-    const modelUrl =
-        'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell';
+    // DeepAI free demo API key
+    const apiKey = '78c56ace-9a3d-4f35-bce1-543c51de609a';
+    const apiUrl = 'https://api.deepai.org/api/text2img';
 
     final response = await dio.post(
-      modelUrl,
-      data: {'inputs': prompt},
+      apiUrl,
+      data: FormData.fromMap({'text': prompt}),
       options: Options(
         headers: {
-          'Authorization': 'Bearer $hfToken',
-          'Content-Type': 'application/json',
+          'Api-Key': apiKey,
         },
-        responseType: ResponseType.bytes,
         sendTimeout: const Duration(seconds: 120),
         receiveTimeout: const Duration(seconds: 120),
       ),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('HF API code ${response.statusCode}');
+      throw Exception('DeepAI API code ${response.statusCode}');
     }
 
-    // Cek apakah response berisi JSON error (model loading)
-    final data = response.data as List<int>;
-    if (data.length < 1000) {
-      // Kemungkinan JSON error, bukan image bytes
-      try {
-        final decoded = utf8.decode(data);
-        final json = jsonDecode(decoded);
-        if (json is Map && json.containsKey('error')) {
-          throw Exception(json['error']);
-        }
-      } catch (e) {
-        if (e is Exception) rethrow;
-      }
+    // DeepAI mengembalikan JSON: { "output_url": "https://..." }
+    final responseData = response.data;
+    if (responseData is! Map || !responseData.containsKey('output_url')) {
+      final errorMsg = responseData is Map
+          ? (responseData['err'] ?? responseData['error'] ?? 'Unknown error')
+          : 'Unexpected response format';
+      throw Exception('DeepAI error: $errorMsg');
     }
 
-    final bytes = Uint8List.fromList(data);
+    final imageUrl = responseData['output_url'] as String;
+
+    // Download gambar dari DeepAI output URL lalu upload ke Cloudinary
+    final imageResponse = await dio.get(
+      imageUrl,
+      options: Options(
+        responseType: ResponseType.bytes,
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
+
+    if (imageResponse.statusCode != 200) {
+      throw Exception('Gagal download gambar DeepAI (${imageResponse.statusCode})');
+    }
+
+    final bytes = Uint8List.fromList(imageResponse.data);
+    if (bytes.length < 1000) {
+      throw Exception('DeepAI mengembalikan data terlalu kecil');
+    }
+
     final fileName = 'ai_cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
     return await uploadBytes(bytes, fileName, 'image/jpeg');
   }
