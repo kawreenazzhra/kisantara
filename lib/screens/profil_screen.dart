@@ -7,6 +7,8 @@ import 'profile/bantuan_screen.dart';
 import 'auth/login_screen.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
+import '../services/database_service.dart';
+import '../models/story_model.dart';
 
 class ProfilScreen extends StatelessWidget {
   const ProfilScreen({super.key});
@@ -123,11 +125,29 @@ class ProfilScreen extends StatelessWidget {
                   // Stats row
                   Row(
                     children: [
-                      _StatCard(value: '$readCount', label: 'Cerita Dibaca'),
+                      Expanded(
+                        child: StreamBuilder<List<StoryModel>>(
+                          stream: DatabaseService().getRecentlyReadStories(currentUser.uid),
+                          builder: (context, snapshot) {
+                            final readCount = snapshot.data?.length ?? 0;
+                            return _StatCard(value: '$readCount', label: 'Cerita Dibaca');
+                          },
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      _StatCard(value: '3', label: 'Lencana'),
+                      const Expanded(
+                        child: _StatCard(value: '3', label: 'Lencana'),
+                      ),
                       const SizedBox(width: 16),
-                      _StatCard(value: '$savedCount', label: 'Disimpan'),
+                      Expanded(
+                        child: StreamBuilder<List<StoryModel>>(
+                          stream: DatabaseService().getBookmarkedStories(currentUser.uid),
+                          builder: (context, snapshot) {
+                            final savedCount = snapshot.data?.length ?? 0;
+                            return _StatCard(value: '$savedCount', label: 'Disimpan');
+                          },
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -237,34 +257,32 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF75F39C).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF00743B),
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF75F39C).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF00743B),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 11,
-                color: const Color(0xFF064E3B),
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 11,
+              color: const Color(0xFF064E3B),
             ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
