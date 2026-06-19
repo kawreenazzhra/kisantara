@@ -27,10 +27,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (penName.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Semua kolom harus diisi!', style: GoogleFonts.plusJakartaSans()),
+          content: Text(
+            'Semua kolom harus diisi!',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
       return;
@@ -39,10 +44,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Kata sandi harus minimal 6 karakter!', style: GoogleFonts.plusJakartaSans()),
+          content: Text(
+            'Kata sandi harus minimal 6 karakter!',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
       return;
@@ -64,10 +74,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Pendaftaran berhasil! Silakan masuk dengan akun baru Anda.', style: GoogleFonts.plusJakartaSans()),
+          content: Text(
+            'Pendaftaran berhasil! Silakan masuk dengan akun baru Anda.',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
           backgroundColor: const Color(0xFF00743B),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
 
@@ -88,7 +103,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: Text(errorMsg, style: GoogleFonts.plusJakartaSans()),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
     } finally {
@@ -204,7 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.02),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -235,7 +252,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );

@@ -59,7 +59,10 @@ class _BahasaScreenState extends State<BahasaScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Bahasa berhasil diubah ke $_selectedLanguage!', style: GoogleFonts.plusJakartaSans()),
+              content: Text(
+                'Bahasa berhasil diubah ke $_selectedLanguage!',
+                style: GoogleFonts.plusJakartaSans(),
+              ),
               backgroundColor: const Color(0xFF00743B),
             ),
           );
@@ -69,7 +72,10 @@ class _BahasaScreenState extends State<BahasaScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal mengubah bahasa: $e', style: GoogleFonts.plusJakartaSans()),
+              content: Text(
+                'Gagal mengubah bahasa: $e',
+                style: GoogleFonts.plusJakartaSans(),
+              ),
               backgroundColor: const Color(0xFFDC2626),
             ),
           );
@@ -93,7 +99,10 @@ class _BahasaScreenState extends State<BahasaScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF064E3B)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF064E3B),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -106,7 +115,9 @@ class _BahasaScreenState extends State<BahasaScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00743B)),
+            )
           : ListView.separated(
               padding: const EdgeInsets.all(24),
               itemCount: _languages.length,
@@ -116,16 +127,21 @@ class _BahasaScreenState extends State<BahasaScreen> {
                 final isSelected = _selectedLanguage == lang['name'];
 
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedLanguage = lang['name']!),
+                  onTap: () =>
+                      setState(() => _selectedLanguage = lang['name']!),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF00743B) : Colors.white,
+                      color: isSelected
+                          ? const Color(0xFF00743B)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF064E3B).withOpacity(0.05),
+                          color: const Color(
+                            0xFF064E3B,
+                          ).withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -149,14 +165,18 @@ class _BahasaScreenState extends State<BahasaScreen> {
                                 lang['name']!,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.w700,
-                                  color: isSelected ? Colors.white : const Color(0xFF373830),
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF373830),
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 lang['code']!,
                                 style: GoogleFonts.beVietnamPro(
-                                  color: isSelected ? Colors.white70 : const Color(0xFF64655C),
+                                  color: isSelected
+                                      ? Colors.white70
+                                      : const Color(0xFF64655C),
                                   fontSize: 12,
                                 ),
                               ),
@@ -164,9 +184,15 @@ class _BahasaScreenState extends State<BahasaScreen> {
                           ),
                         ),
                         if (isSelected)
-                          const Icon(Icons.check_circle_rounded, color: Colors.white)
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.white,
+                          )
                         else
-                          const Icon(Icons.radio_button_off_rounded, color: Color(0xFF64655C)),
+                          const Icon(
+                            Icons.radio_button_off_rounded,
+                            color: Color(0xFF64655C),
+                          ),
                       ],
                     ),
                   ),
@@ -185,7 +211,9 @@ class _BahasaScreenState extends State<BahasaScreen> {
                     backgroundColor: const Color(0xFF00743B),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(

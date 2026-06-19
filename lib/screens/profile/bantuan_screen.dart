@@ -13,7 +13,10 @@ class BantuanScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF064E3B)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF064E3B),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -38,7 +41,7 @@ class BantuanScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF064E3B).withOpacity(0.05),
+                    color: const Color(0xFF064E3B).withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -47,8 +50,13 @@ class BantuanScreen extends StatelessWidget {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Cari bantuan...',
-                  hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFFB4B4B4)),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF00743B)),
+                  hintStyle: GoogleFonts.beVietnamPro(
+                    color: const Color(0xFFB4B4B4),
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF00743B),
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -83,18 +91,24 @@ class BantuanScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 48),
-            
+
             // Contact Section
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF75F39C).withOpacity(0.2),
+                color: const Color(0xFF75F39C).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF75F39C).withOpacity(0.5)),
+                border: Border.all(
+                  color: const Color(0xFF75F39C).withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.support_agent_rounded, size: 48, color: Color(0xFF00743B)),
+                  const Icon(
+                    Icons.support_agent_rounded,
+                    size: 48,
+                    color: Color(0xFF00743B),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Masih butuh bantuan?',
@@ -150,7 +164,7 @@ class BantuanScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.05),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

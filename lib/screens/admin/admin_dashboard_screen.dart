@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,90 +15,132 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   bool _isLoading = true;
   int _totalStories = 0;
   int _totalUsers = 0;
-  int _totalSaved = 0;
   int _totalRead = 0;
   int _pendingStories = 0;
   List<Map<String, dynamic>> _recentActivities = [];
 
+  StreamSubscription? _storiesSubscription;
+  StreamSubscription? _usersSubscription;
+  bool _hasStoriesData = false;
+  bool _hasUsersData = false;
+
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _subscribeToStats();
   }
 
-  Future<void> _loadStats() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
+  void _subscribeToStats() {
+    _storiesSubscription = _db
+        .collection('stories')
+        .snapshots()
+        .listen((storiesSnapshot) {
+      int approvedCount = 0;
+      int pendingCount = 0;
+      List<DocumentSnapshot<Map<String, dynamic>>> approvedDocs = [];
 
-    int storiesCount = 0;
-    int pendingCount = 0;
-    int usersCount = 0;
-    int savedCount = 0;
-    int readCount = 0;
-    List<Map<String, dynamic>> activities = [];
+      for (var doc in storiesSnapshot.docs) {
+        final data = doc.data();
+        final status = data['status'] ?? 'approved';
+        if (status == 'approved') {
+          approvedCount++;
+          approvedDocs.add(doc);
+        } else if (status == 'pending') {
+          pendingCount++;
+        }
+      }
 
-    // 1. Stories (approved)
-    try {
-      final storiesSnapshot = await _db
-          .collection('stories')
-          .where('status', isEqualTo: 'approved')
-          .orderBy('timestamp', descending: true)
-          .get();
-      storiesCount = storiesSnapshot.docs.length;
-      final recentStories = storiesSnapshot.docs.take(5).toList();
+      // Sort recent stories by timestamp descending
+      approvedDocs.sort((a, b) {
+        final aTime = (a.data()?['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = (b.data()?['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+
+      final recentStories = approvedDocs.take(5).toList();
+      List<Map<String, dynamic>> activities = [];
       for (var storyDoc in recentStories) {
         final data = storyDoc.data();
-        final title = data['title'] ?? 'Cerita Tanpa Judul';
-        final author = data['authorName'] ?? 'Anonim';
-        activities.add({
-          'icon': Icons.add_circle_rounded,
-          'iconColor': const Color(0xFF059669),
-          'title': 'Cerita dipublikasikan',
-          'subtitle': '"$title" oleh $author',
+        if (data != null) {
+          final title = data['title'] ?? 'Cerita Tanpa Judul';
+          final author = data['authorName'] ?? 'Anonim';
+          activities.add({
+            'icon': Icons.add_circle_rounded,
+            'iconColor': const Color(0xFF059669),
+            'title': 'Cerita dipublikasikan',
+            'subtitle': '"$title" oleh $author',
+          });
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _totalStories = approvedCount;
+          _pendingStories = pendingCount;
+          _recentActivities = activities;
+          _hasStoriesData = true;
+          if (_hasUsersData) {
+            _isLoading = false;
+          }
         });
       }
-    } catch (e) {
-      print('Dashboard error (stories): $e');
-      // Keep storiesCount = 0; show real data only
-    }
+    }, onError: (e) {
+      print('Dashboard error (stories stream): $e');
+    });
 
-    // 2. Pending stories
-    try {
-      final pendingSnapshot = await _db
-          .collection('stories')
-          .where('status', isEqualTo: 'pending')
-          .get();
-      pendingCount = pendingSnapshot.docs.length;
-    } catch (e) {
-      print('Dashboard error (pending): $e');
-    }
+    _usersSubscription = _db
+        .collection('users')
+        .snapshots()
+        .listen((usersSnapshot) {
+      int usersCount = usersSnapshot.docs.length;
+      int readCount = 0;
 
-    // 3. Users
-    try {
-      final usersSnapshot = await _db.collection('users').get();
-      usersCount = usersSnapshot.docs.length;
       for (var doc in usersSnapshot.docs) {
         final data = doc.data();
-        final saved = data['savedStories'] as List?;
         final read = data['recentlyRead'] as List?;
-        savedCount += saved?.length ?? 0;
         readCount += read?.length ?? 0;
       }
-    } catch (e) {
-      print('Dashboard error (users): $e');
-    }
 
+      if (mounted) {
+        setState(() {
+          _totalUsers = usersCount;
+          _totalRead = readCount;
+          _hasUsersData = true;
+          if (_hasStoriesData) {
+            _isLoading = false;
+          }
+        });
+      }
+    }, onError: (e) {
+      print('Dashboard error (users stream): $e');
+    });
+  }
+
+  Future<void> _handleRefresh() async {
+    _storiesSubscription?.cancel();
+    _usersSubscription?.cancel();
     if (mounted) {
       setState(() {
-        _totalStories = storiesCount;
-        _pendingStories = pendingCount;
-        _totalUsers = usersCount;
-        _totalSaved = savedCount;
-        _totalRead = readCount;
-        _recentActivities = activities;
-        _isLoading = false;
+        _isLoading = true;
+        _hasStoriesData = false;
+        _hasUsersData = false;
       });
     }
+    _subscribeToStats();
+    
+    // Wait for data load or max 2 seconds to close refresh indicator
+    int counter = 0;
+    while (_isLoading && counter < 20 && mounted) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      counter++;
+    }
+  }
+
+  @override
+  void dispose() {
+    _storiesSubscription?.cancel();
+    _usersSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -106,7 +149,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       backgroundColor: const Color(0xFFFEFDF1),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _loadStats,
+          onRefresh: _handleRefresh,
           color: const Color(0xFF00743B),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -141,8 +184,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00743B)),
-                      onPressed: _loadStats,
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        color: Color(0xFF00743B),
+                      ),
+                      onPressed: _handleRefresh,
                     ),
                   ],
                 ),
@@ -152,7 +198,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(color: Color(0xFF00743B)),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF00743B),
+                      ),
                     ),
                   )
                 else ...[
@@ -215,17 +263,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Text(
                           'Belum ada aktivitas penulisan cerita.',
-                          style: GoogleFonts.beVietnamPro(color: const Color(0xFFBABAAF)),
+                          style: GoogleFonts.beVietnamPro(
+                            color: const Color(0xFFBABAAF),
+                          ),
                         ),
                       ),
                     )
                   else
-                    ..._recentActivities.map((act) => _ActivityTile(
-                          icon: act['icon'],
-                          iconColor: act['iconColor'],
-                          title: act['title'],
-                          subtitle: act['subtitle'],
-                        )),
+                    ..._recentActivities.map(
+                      (act) => _ActivityTile(
+                        icon: act['icon'],
+                        iconColor: act['iconColor'],
+                        title: act['title'],
+                        subtitle: act['subtitle'],
+                      ),
+                    ),
                 ],
               ],
             ),
@@ -261,7 +313,7 @@ class _StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF064E3B).withOpacity(0.05),
+              color: const Color(0xFF064E3B).withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -326,7 +378,7 @@ class _ActivityTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.04),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -338,7 +390,7 @@ class _ActivityTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: iconColor, size: 20),

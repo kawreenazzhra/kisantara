@@ -31,21 +31,31 @@ class _AdminManageScreenState extends State<AdminManageScreen>
 
   Color _catColor(String cat) {
     switch (cat.toUpperCase()) {
-      case 'LEGENDA': return const Color(0xFFBFD9FE);
-      case 'MITOS': return const Color(0xFFDDD6FE);
-      case 'FABEL': return const Color(0xFFC6F6D5);
-      case 'FANTASI': return const Color(0xFFFFD1E6);
-      default: return const Color(0xFFE5E7EB);
+      case 'LEGENDA':
+        return const Color(0xFFBFD9FE);
+      case 'MITOS':
+        return const Color(0xFFDDD6FE);
+      case 'FABEL':
+        return const Color(0xFFC6F6D5);
+      case 'FANTASI':
+        return const Color(0xFFFFD1E6);
+      default:
+        return const Color(0xFFE5E7EB);
     }
   }
 
   Color _catTextColor(String cat) {
     switch (cat.toUpperCase()) {
-      case 'LEGENDA': return const Color(0xFF1D5AA8);
-      case 'MITOS': return const Color(0xFF5B21B6);
-      case 'FABEL': return const Color(0xFF065F46);
-      case 'FANTASI': return const Color(0xFF9C0E56);
-      default: return const Color(0xFF374151);
+      case 'LEGENDA':
+        return const Color(0xFF1D5AA8);
+      case 'MITOS':
+        return const Color(0xFF5B21B6);
+      case 'FABEL':
+        return const Color(0xFF065F46);
+      case 'FANTASI':
+        return const Color(0xFF9C0E56);
+      default:
+        return const Color(0xFF374151);
     }
   }
 
@@ -56,7 +66,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           'Hapus Cerita?',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: const Color(0xFF065F46)),
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF065F46),
+          ),
         ),
         content: Text(
           'Cerita yang dihapus tidak dapat dipulihkan. Lanjutkan?',
@@ -65,7 +78,12 @@ class _AdminManageScreenState extends State<AdminManageScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.plusJakartaSans(
+                color: const Color(0xFF64655C),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -75,10 +93,15 @@ class _AdminManageScreenState extends State<AdminManageScreen>
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Cerita berhasil dihapus.', style: GoogleFonts.plusJakartaSans()),
+                      content: Text(
+                        'Cerita berhasil dihapus.',
+                        style: GoogleFonts.plusJakartaSans(),
+                      ),
                       backgroundColor: const Color(0xFFDC2626),
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   );
                 }
@@ -86,7 +109,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Gagal menghapus cerita: $e', style: GoogleFonts.plusJakartaSans()),
+                      content: Text(
+                        'Gagal menghapus cerita: $e',
+                        style: GoogleFonts.plusJakartaSans(),
+                      ),
                       backgroundColor: const Color(0xFFDC2626),
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -96,9 +122,17 @@ class _AdminManageScreenState extends State<AdminManageScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text('Hapus', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(
+              'Hapus',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -108,9 +142,7 @@ class _AdminManageScreenState extends State<AdminManageScreen>
   void _editStory(StoryModel story) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AdminFormScreen(editStory: story),
-      ),
+      MaterialPageRoute(builder: (_) => AdminFormScreen(editStory: story)),
     );
   }
 
@@ -120,10 +152,15 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cerita "$title" disetujui dan dipublikasikan! ✅', style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              'Cerita "$title" disetujui dan dipublikasikan! ✅',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
             backgroundColor: const Color(0xFF00743B),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
         );
       }
@@ -131,7 +168,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal menyetujui cerita: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              'Gagal menyetujui cerita: $e',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
           ),
@@ -146,10 +186,15 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cerita "$title" ditolak.', style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              'Cerita "$title" ditolak.',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
         );
       }
@@ -157,7 +202,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal menolak cerita: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              'Gagal menolak cerita: $e',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
           ),
@@ -191,7 +239,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
                   const SizedBox(height: 4),
                   Text(
                     'Manajemen cerita dan moderasi kiriman pengguna.',
-                    style: GoogleFonts.beVietnamPro(fontSize: 14, color: const Color(0xFF64655C)),
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 14,
+                      color: const Color(0xFF64655C),
+                    ),
                   ),
                 ],
               ),
@@ -202,8 +253,14 @@ class _AdminManageScreenState extends State<AdminManageScreen>
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: TabBar(
                 controller: _tabController,
-                labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14),
-                unselectedLabelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, fontSize: 14),
+                labelStyle: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+                unselectedLabelStyle: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
                 labelColor: const Color(0xFF00743B),
                 unselectedLabelColor: const Color(0xFF9CA3AF),
                 indicatorColor: const Color(0xFF00743B),
@@ -221,7 +278,10 @@ class _AdminManageScreenState extends State<AdminManageScreen>
                             if (count > 0) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFDC2626),
                                   borderRadius: BorderRadius.circular(9999),
@@ -302,7 +362,9 @@ class _PendingStoriesTab extends StatelessWidget {
       stream: databaseService.getPendingStories(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF00743B)),
+          );
         }
         if (snapshot.hasError) {
           return Center(
@@ -319,7 +381,11 @@ class _PendingStoriesTab extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle_outline_rounded, size: 64, color: Color(0xFF00743B)),
+                const Icon(
+                  Icons.check_circle_outline_rounded,
+                  size: 64,
+                  color: Color(0xFF00743B),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Semua cerita sudah divalidasi! ✅',
@@ -331,7 +397,10 @@ class _PendingStoriesTab extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   'Tidak ada cerita yang menunggu persetujuan.',
-                  style: GoogleFonts.beVietnamPro(color: const Color(0xFF9CA3AF), fontSize: 13),
+                  style: GoogleFonts.beVietnamPro(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -341,10 +410,11 @@ class _PendingStoriesTab extends StatelessWidget {
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 110),
           itemCount: stories.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, i) {
             final story = stories[i];
-            final dateStr = '${story.timestamp.day}/${story.timestamp.month}/${story.timestamp.year}';
+            final dateStr =
+                '${story.timestamp.day}/${story.timestamp.month}/${story.timestamp.year}';
 
             return Container(
               padding: const EdgeInsets.all(16),
@@ -354,7 +424,7 @@ class _PendingStoriesTab extends StatelessWidget {
                 border: Border.all(color: const Color(0xFFFBBF24), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFBBF24).withOpacity(0.1),
+                    color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -365,7 +435,10 @@ class _PendingStoriesTab extends StatelessWidget {
                 children: [
                   // Pending badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(9999),
@@ -373,7 +446,11 @@ class _PendingStoriesTab extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.pending_rounded, size: 12, color: Color(0xFFD97706)),
+                        const Icon(
+                          Icons.pending_rounded,
+                          size: 12,
+                          color: Color(0xFFD97706),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Menunggu Validasi',
@@ -400,14 +477,14 @@ class _PendingStoriesTab extends StatelessWidget {
                                 width: 56,
                                 height: 56,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _PlaceholderCover(),
+                                errorBuilder: (_, _, _) => _PlaceholderCover(),
                               )
                             : Image.asset(
                                 story.imagePath,
                                 width: 56,
                                 height: 56,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _PlaceholderCover(),
+                                errorBuilder: (_, _, _) => _PlaceholderCover(),
                               ),
                       ),
                       const SizedBox(width: 12),
@@ -429,7 +506,10 @@ class _PendingStoriesTab extends StatelessWidget {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: catColor(story.category),
                                     borderRadius: BorderRadius.circular(9999),
@@ -444,7 +524,11 @@ class _PendingStoriesTab extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF9CA3AF)),
+                                const Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 12,
+                                  color: Color(0xFF9CA3AF),
+                                ),
                                 const SizedBox(width: 3),
                                 Expanded(
                                   child: Text(
@@ -461,7 +545,10 @@ class _PendingStoriesTab extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               'Dikirim: $dateStr',
-                              style: GoogleFonts.beVietnamPro(fontSize: 11, color: const Color(0xFF9CA3AF)),
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 11,
+                                color: const Color(0xFF9CA3AF),
+                              ),
                             ),
                           ],
                         ),
@@ -476,7 +563,9 @@ class _PendingStoriesTab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          story.part1.length > 180 ? '${story.part1.substring(0, 180)}...' : story.part1,
+                          story.part1.length > 180
+                              ? '${story.part1.substring(0, 180)}...'
+                              : story.part1,
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 13,
                             color: const Color(0xFF64655C),
@@ -493,7 +582,10 @@ class _PendingStoriesTab extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(8),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 2,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -506,7 +598,11 @@ class _PendingStoriesTab extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF2563EB)),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 12,
+                                  color: Color(0xFF2563EB),
+                                ),
                               ],
                             ),
                           ),
@@ -524,13 +620,18 @@ class _PendingStoriesTab extends StatelessWidget {
                           icon: const Icon(Icons.check_rounded, size: 18),
                           label: Text(
                             'Setujui',
-                            style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00743B),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -542,13 +643,18 @@ class _PendingStoriesTab extends StatelessWidget {
                           icon: const Icon(Icons.close_rounded, size: 18),
                           label: Text(
                             'Tolak',
-                            style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFDC2626),
                             side: const BorderSide(color: Color(0xFFDC2626)),
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                         ),
                       ),
@@ -588,7 +694,9 @@ class _AllStoriesTab extends StatelessWidget {
       stream: databaseService.getAllStoriesForAdmin(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF00743B)),
+          );
         }
         if (snapshot.hasError) {
           return Center(child: Text('Terjadi kesalahan: ${snapshot.error}'));
@@ -601,10 +709,18 @@ class _AllStoriesTab extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.inbox_rounded, size: 64, color: Color(0xFFBABAAF)),
+                const Icon(
+                  Icons.inbox_rounded,
+                  size: 64,
+                  color: Color(0xFFBABAAF),
+                ),
                 const SizedBox(height: 12),
-                Text('Belum ada cerita.',
-                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+                Text(
+                  'Belum ada cerita.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF64655C),
+                  ),
+                ),
               ],
             ),
           );
@@ -613,10 +729,11 @@ class _AllStoriesTab extends StatelessWidget {
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 110),
           itemCount: stories.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, i) {
             final story = stories[i];
-            final dateStr = '${story.timestamp.day}/${story.timestamp.month}/${story.timestamp.year}';
+            final dateStr =
+                '${story.timestamp.day}/${story.timestamp.month}/${story.timestamp.year}';
 
             // Status color
             Color statusBg;
@@ -643,7 +760,7 @@ class _AllStoriesTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF064E3B).withOpacity(0.05),
+                    color: const Color(0xFF064E3B).withValues(alpha: 0.05),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -688,7 +805,11 @@ class _AllStoriesTab extends StatelessWidget {
                         // Author name
                         Row(
                           children: [
-                            const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF9CA3AF)),
+                            const Icon(
+                              Icons.person_outline_rounded,
+                              size: 12,
+                              color: Color(0xFF9CA3AF),
+                            ),
                             const SizedBox(width: 3),
                             Text(
                               story.authorName,
@@ -703,7 +824,10 @@ class _AllStoriesTab extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: catColor(story.category),
                                 borderRadius: BorderRadius.circular(9999),
@@ -720,7 +844,10 @@ class _AllStoriesTab extends StatelessWidget {
                             const SizedBox(width: 6),
                             // Status badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusBg,
                                 borderRadius: BorderRadius.circular(9999),
@@ -783,7 +910,11 @@ class _PlaceholderCover extends StatelessWidget {
       width: 56,
       height: 56,
       color: const Color(0xFFE5E7EB),
-      child: const Icon(Icons.image_not_supported_rounded, color: Color(0xFF9CA3AF), size: 24),
+      child: const Icon(
+        Icons.image_not_supported_rounded,
+        color: Color(0xFF9CA3AF),
+        size: 24,
+      ),
     );
   }
 }

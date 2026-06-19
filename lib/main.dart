@@ -11,9 +11,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -54,11 +52,7 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
 
-  static const _screens = [
-    JelajahScreen(),
-    CeritaSayaScreen(),
-    ProfilScreen(),
-  ];
+  static const _screens = [JelajahScreen(), CeritaSayaScreen(), ProfilScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +90,11 @@ class _BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5).withOpacity(0.92),
+        color: const Color(0xFFECFDF5).withValues(alpha: 0.92),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(48)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00743B).withOpacity(0.08),
+            color: const Color(0xFF00743B).withValues(alpha: 0.08),
             blurRadius: 48,
             offset: const Offset(0, -8),
           ),
@@ -170,7 +164,7 @@ class _NavItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFFA7F3D0).withOpacity(0.5)
+              ? const Color(0xFFA7F3D0).withValues(alpha: 0.5)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(9999),
         ),
@@ -181,7 +175,7 @@ class _NavItem extends StatelessWidget {
               isActive ? activeIcon : icon,
               color: isActive
                   ? const Color(0xFF047857)
-                  : const Color(0xFF059669).withOpacity(0.7),
+                  : const Color(0xFF059669).withValues(alpha: 0.7),
               size: 22,
             ),
             const SizedBox(height: 2),
@@ -192,7 +186,7 @@ class _NavItem extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: isActive
                     ? const Color(0xFF064E3B)
-                    : const Color(0xFF059669).withOpacity(0.7),
+                    : const Color(0xFF059669).withValues(alpha: 0.7),
               ),
             ),
           ],

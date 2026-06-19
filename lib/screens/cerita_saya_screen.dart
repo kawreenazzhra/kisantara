@@ -37,7 +37,12 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.plusJakartaSans(
+                color: const Color(0xFF64655C),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -46,19 +51,32 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Cerita berhasil dihapus.', style: GoogleFonts.plusJakartaSans()),
+                    content: Text(
+                      'Cerita berhasil dihapus.',
+                      style: GoogleFonts.plusJakartaSans(),
+                    ),
                     backgroundColor: const Color(0xFFDC2626),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text('Hapus', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(
+              'Hapus',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -71,9 +89,7 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
     if (user == null) {
       return const Scaffold(
         backgroundColor: Color(0xFFFEFDF1),
-        body: Center(
-          child: Text('Silakan login terlebih dahulu.'),
-        ),
+        body: Center(child: Text('Silakan login terlebih dahulu.')),
       );
     }
 
@@ -84,7 +100,9 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const WriteStoryScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const WriteStoryScreen(),
+                  ),
                 );
               },
               backgroundColor: const Color(0xFF00743B),
@@ -94,7 +112,9 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                 'Tulis Cerita',
                 style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             )
           : null,
       floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
@@ -150,8 +170,8 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                 stream: _selectedTab == 0
                     ? _databaseService.getBookmarkedStories(user.uid)
                     : _selectedTab == 1
-                        ? _databaseService.getRecentlyReadStories(user.uid)
-                        : _databaseService.getUserStories(user.uid),
+                    ? _databaseService.getRecentlyReadStories(user.uid)
+                    : _databaseService.getUserStories(user.uid),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -160,7 +180,7 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                       ),
                     );
                   }
-                  
+
                   final listToShow = snapshot.data ?? [];
                   if (listToShow.isEmpty) {
                     String emptyText = 'Belum ada cerita disimpan.';
@@ -177,11 +197,17 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(emptyIcon, size: 64, color: const Color(0xFFBABAAF)),
+                          Icon(
+                            emptyIcon,
+                            size: 64,
+                            color: const Color(0xFFBABAAF),
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             emptyText,
-                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C)),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF64655C),
+                            ),
                           ),
                         ],
                       ),
@@ -191,7 +217,8 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
                     itemCount: listToShow.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final story = listToShow[index];
                       return _StoryListTile(
@@ -202,7 +229,8 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => WriteStoryScreen(editStory: story),
+                              builder: (context) =>
+                                  WriteStoryScreen(editStory: story),
                             ),
                           );
                         },
@@ -241,7 +269,9 @@ class _TabItem extends StatelessWidget {
           color: isSelected ? const Color(0xFF00743B) : Colors.transparent,
           borderRadius: BorderRadius.circular(9999),
           border: Border.all(
-            color: isSelected ? const Color(0xFF00743B) : const Color(0xFFBABAAF).withOpacity(0.5),
+            color: isSelected
+                ? const Color(0xFF00743B)
+                : const Color(0xFFBABAAF).withValues(alpha: 0.5),
           ),
         ),
         child: Text(
@@ -284,7 +314,10 @@ class _StoryListTile extends StatelessWidget {
             width: 80,
             height: 80,
             color: const Color(0xFFE5E7EB),
-            child: const Icon(Icons.image_not_supported_rounded, color: Color(0xFF9CA3AF)),
+            child: const Icon(
+              Icons.image_not_supported_rounded,
+              color: Color(0xFF9CA3AF),
+            ),
           );
         },
       );
@@ -299,7 +332,10 @@ class _StoryListTile extends StatelessWidget {
             width: 80,
             height: 80,
             color: const Color(0xFFE5E7EB),
-            child: const Icon(Icons.image_not_supported_rounded, color: Color(0xFF9CA3AF)),
+            child: const Icon(
+              Icons.image_not_supported_rounded,
+              color: Color(0xFF9CA3AF),
+            ),
           );
         },
       );
@@ -321,7 +357,7 @@ class _StoryListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF064E3B).withOpacity(0.05),
+              color: const Color(0xFF064E3B).withValues(alpha: 0.05),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -339,7 +375,10 @@ class _StoryListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: story.categoryColor,
                       borderRadius: BorderRadius.circular(9999),
@@ -368,7 +407,10 @@ class _StoryListTile extends StatelessWidget {
                   // Show status badge for user's own stories
                   if (isOwnWork && story.isPending)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
                         borderRadius: BorderRadius.circular(9999),
@@ -384,7 +426,10 @@ class _StoryListTile extends StatelessWidget {
                     )
                   else if (isOwnWork && story.isRejected)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEE2E2),
                         borderRadius: BorderRadius.circular(9999),
@@ -400,7 +445,11 @@ class _StoryListTile extends StatelessWidget {
                     ),
                   Row(
                     children: [
-                      const Icon(Icons.access_time_rounded, size: 12, color: Color(0xFF64655C)),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 12,
+                        color: Color(0xFF64655C),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         story.readTime,
@@ -414,19 +463,27 @@ class _StoryListTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (isOwnWork) ...[  
+            if (isOwnWork) ...[
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.edit_rounded, color: Color(0xFF2563EB), size: 20),
+                    icon: const Icon(
+                      Icons.edit_rounded,
+                      color: Color(0xFF2563EB),
+                      size: 20,
+                    ),
                     onPressed: onEdit,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFDC2626), size: 20),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 20,
+                    ),
                     onPressed: onDelete,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -447,7 +504,8 @@ class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final Offset standardOffset = FloatingActionButtonLocation.endFloat.getOffset(scaffoldGeometry);
+    final Offset standardOffset = FloatingActionButtonLocation.endFloat
+        .getOffset(scaffoldGeometry);
     // Move the FAB 88 pixels higher to sit nicely above the navigation bar
     return Offset(standardOffset.dx, standardOffset.dy - 88);
   }

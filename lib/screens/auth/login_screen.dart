@@ -26,26 +26,34 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Email dan kata sandi harus diisi!', style: GoogleFonts.plusJakartaSans()),
+          content: Text(
+            'Email dan kata sandi harus diisi!',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
       return;
     }
 
     if (email == 'admin@admin.com' && password == 'admin123') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminShell()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const AdminShell()));
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final credential = await _authService.signInWithEmailAndPassword(email, password);
+      final credential = await _authService.signInWithEmailAndPassword(
+        email,
+        password,
+      );
       final uid = credential.user?.uid;
       if (uid != null) {
         final profile = await _authService.getUserProfile(uid);
@@ -67,7 +75,8 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } catch (e) {
-      String errorMsg = 'Gagal masuk. Silakan periksa kembali email & sandi Anda.';
+      String errorMsg =
+          'Gagal masuk. Silakan periksa kembali email & sandi Anda.';
       if (e.toString().contains('user-not-found')) {
         errorMsg = 'Pengguna tidak ditemukan.';
       } else if (e.toString().contains('wrong-password')) {
@@ -78,7 +87,9 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text(errorMsg, style: GoogleFonts.plusJakartaSans()),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
     } finally {
@@ -109,7 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.menu_book_rounded, color: Color(0xFF00743B), size: 64),
+                    child: Icon(
+                      Icons.menu_book_rounded,
+                      color: Color(0xFF00743B),
+                      size: 64,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -187,7 +202,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
                         );
                       },
                       child: Text(
@@ -222,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
         border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.02),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -253,7 +270,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );

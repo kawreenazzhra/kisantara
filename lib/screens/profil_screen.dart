@@ -29,13 +29,19 @@ class ProfilScreen extends StatelessWidget {
         child: StreamBuilder<UserModel?>(
           stream: authService.getUserProfileStream(currentUser.uid),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)));
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF00743B)),
+              );
             }
 
             final userProfile = snapshot.data;
             final penName = userProfile?.penName ?? 'Penjelajah Kisantara';
-            final email = userProfile?.email ?? currentUser.email ?? 'penjelajah@kisantara.id';
+            final email =
+                userProfile?.email ??
+                currentUser.email ??
+                'penjelajah@kisantara.id';
             final savedCount = userProfile?.savedStories.length ?? 0;
             final readCount = userProfile?.recentlyRead.length ?? 0;
 
@@ -48,7 +54,9 @@ class ProfilScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EditProfilScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfilScreen(),
+                      ),
                     ),
                     child: Stack(
                       alignment: Alignment.bottomRight,
@@ -60,15 +68,18 @@ class ProfilScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: ClipOval(
-                            child: (userProfile?.photoUrl != null && userProfile!.photoUrl.isNotEmpty)
+                            child:
+                                (userProfile?.photoUrl != null &&
+                                    userProfile!.photoUrl.isNotEmpty)
                                 ? Image.network(
                                     userProfile.photoUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Image.asset(
-                                          'assets/images/user_avatar.png',
-                                          fit: BoxFit.cover,
-                                        ),
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Image.asset(
+                                              'assets/images/user_avatar.png',
+                                              fit: BoxFit.cover,
+                                            ),
                                   )
                                 : Image.asset(
                                     'assets/images/user_avatar.png',
@@ -82,7 +93,11 @@ class ProfilScreen extends StatelessWidget {
                             color: Color(0xFF00743B),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -122,7 +137,9 @@ class ProfilScreen extends StatelessWidget {
                     label: 'Edit Profil',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EditProfilScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfilScreen(),
+                      ),
                     ),
                   ),
                   _MenuItem(
@@ -130,7 +147,9 @@ class ProfilScreen extends StatelessWidget {
                     label: 'Notifikasi',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const NotifikasiScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const NotifikasiScreen(),
+                      ),
                     ),
                   ),
                   _MenuItem(
@@ -138,7 +157,9 @@ class ProfilScreen extends StatelessWidget {
                     label: 'Bahasa',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const BahasaScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const BahasaScreen(),
+                      ),
                     ),
                   ),
                   _MenuItem(
@@ -146,7 +167,9 @@ class ProfilScreen extends StatelessWidget {
                     label: 'Bantuan',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const BantuanScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const BantuanScreen(),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -159,19 +182,25 @@ class ProfilScreen extends StatelessWidget {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Anda telah keluar dari aplikasi.',
-                                style: GoogleFonts.plusJakartaSans()),
+                            content: Text(
+                              'Anda telah keluar dari aplikasi.',
+                              style: GoogleFonts.plusJakartaSans(),
+                            ),
                             backgroundColor: const Color(0xFFDC2626),
                           ),
                         );
                         // Navigate to LoginScreen and clear navigation stack
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
                           (route) => false,
                         );
                       },
-                      icon: const Icon(Icons.logout_rounded,
-                          color: Color(0xFFDC2626)),
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Color(0xFFDC2626),
+                      ),
                       label: Text(
                         'Keluar',
                         style: GoogleFonts.plusJakartaSans(
@@ -182,9 +211,12 @@ class ProfilScreen extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         side: const BorderSide(
-                            color: Color(0xFFDC2626), width: 1.5),
+                          color: Color(0xFFDC2626),
+                          width: 1.5,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(48)),
+                          borderRadius: BorderRadius.circular(48),
+                        ),
                       ),
                     ),
                   ),
@@ -209,7 +241,7 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF75F39C).withOpacity(0.15),
+          color: const Color(0xFF75F39C).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
@@ -257,7 +289,7 @@ class _MenuItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.05),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -268,7 +300,7 @@ class _MenuItem extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xFF75F39C).withOpacity(0.2),
+            color: const Color(0xFF75F39C).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: const Color(0xFF00743B), size: 20),
@@ -281,8 +313,10 @@ class _MenuItem extends StatelessWidget {
             color: const Color(0xFF373830),
           ),
         ),
-        trailing: const Icon(Icons.chevron_right_rounded,
-            color: Color(0xFF64655C)),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFF64655C),
+        ),
         onTap: onTap,
       ),
     );

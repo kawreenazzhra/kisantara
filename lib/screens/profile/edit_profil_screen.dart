@@ -67,7 +67,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal memilih gambar: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              'Gagal memilih gambar: $e',
+              style: GoogleFonts.plusJakartaSans(),
+            ),
             backgroundColor: const Color(0xFFDC2626),
           ),
         );
@@ -88,9 +91,14 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
           final name = _imageFile!.name.toLowerCase();
           final ext = name.contains('.') ? name.split('.').last : 'jpg';
           final mimeType = (ext == 'png') ? 'image/png' : 'image/jpeg';
-          final fileName = 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.$ext';
-          
-          newPhotoUrl = await storageService.uploadBytes(_imageBytes!, fileName, mimeType);
+          final fileName =
+              'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+          newPhotoUrl = await storageService.uploadBytes(
+            _imageBytes!,
+            fileName,
+            mimeType,
+          );
         }
 
         await _authService.updateUserProfile(
@@ -102,7 +110,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Profil berhasil diperbarui!', style: GoogleFonts.plusJakartaSans()),
+              content: Text(
+                'Profil berhasil diperbarui!',
+                style: GoogleFonts.plusJakartaSans(),
+              ),
               backgroundColor: const Color(0xFF00743B),
             ),
           );
@@ -112,7 +123,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal memperbarui profil: $e', style: GoogleFonts.plusJakartaSans()),
+              content: Text(
+                'Gagal memperbarui profil: $e',
+                style: GoogleFonts.plusJakartaSans(),
+              ),
               backgroundColor: const Color(0xFFDC2626),
             ),
           );
@@ -144,7 +158,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF064E3B)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF064E3B),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -157,7 +174,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00743B)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00743B)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -177,24 +196,25 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                           ),
                           child: ClipOval(
                             child: _imageBytes != null
-                                ? Image.memory(
-                                    _imageBytes!,
-                                    fit: BoxFit.cover,
-                                  )
+                                ? Image.memory(_imageBytes!, fit: BoxFit.cover)
                                 : (_currentPhotoUrl.isNotEmpty
-                                    ? Image.network(
-                                        _currentPhotoUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            Image.asset(
-                                              'assets/images/user_avatar.png',
-                                              fit: BoxFit.cover,
-                                            ),
-                                      )
-                                    : Image.asset(
-                                        'assets/images/user_avatar.png',
-                                        fit: BoxFit.cover,
-                                      )),
+                                      ? Image.network(
+                                          _currentPhotoUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) => Image.asset(
+                                                'assets/images/user_avatar.png',
+                                                fit: BoxFit.cover,
+                                              ),
+                                        )
+                                      : Image.asset(
+                                          'assets/images/user_avatar.png',
+                                          fit: BoxFit.cover,
+                                        )),
                           ),
                         ),
                         Container(
@@ -203,7 +223,11 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                             color: Color(0xFF00743B),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ],
                     ),
@@ -247,7 +271,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         backgroundColor: const Color(0xFF00743B),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
                       child: Text(
@@ -294,7 +320,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF064E3B).withOpacity(0.05),
+                color: const Color(0xFF064E3B).withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -304,10 +330,16 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
             controller: controller,
             maxLines: maxLines,
             enabled: enabled,
-            style: GoogleFonts.beVietnamPro(color: enabled ? const Color(0xFF373830) : const Color(0xFF9CA3AF)),
+            style: GoogleFonts.beVietnamPro(
+              color: enabled
+                  ? const Color(0xFF373830)
+                  : const Color(0xFF9CA3AF),
+            ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.beVietnamPro(color: const Color(0xFFB4B4B4)),
+              hintStyle: GoogleFonts.beVietnamPro(
+                color: const Color(0xFFB4B4B4),
+              ),
               prefixIcon: Icon(icon, color: const Color(0xFF00743B), size: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),

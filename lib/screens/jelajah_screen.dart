@@ -7,7 +7,13 @@ import '../models/story_model.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 
-final List<String> _categories = ['Semua', 'Mitos', 'Legenda', 'Fabel', 'Fantasi'];
+final List<String> _categories = [
+  'Semua',
+  'Mitos',
+  'Legenda',
+  'Fabel',
+  'Fantasi',
+];
 
 class JelajahScreen extends StatefulWidget {
   const JelajahScreen({super.key});
@@ -77,23 +83,33 @@ class _JelajahScreenState extends State<JelajahScreen> {
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                  
+
                   if (snapshot.connectionState == ConnectionState.waiting)
                     const SliverFillRemaining(
                       child: Center(
-                        child: CircularProgressIndicator(color: Color(0xFF00743B)),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF00743B),
+                        ),
                       ),
                     )
                   else if (filtered.isEmpty)
-                     SliverFillRemaining(
+                    SliverFillRemaining(
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.inbox_rounded, size: 64, color: Color(0xFFBABAAF)),
+                            const Icon(
+                              Icons.inbox_rounded,
+                              size: 64,
+                              color: Color(0xFFBABAAF),
+                            ),
                             const SizedBox(height: 12),
-                            Text('Belum ada cerita.',
-                                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+                            Text(
+                              'Belum ada cerita.',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFF64655C),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -105,22 +121,21 @@ class _JelajahScreenState extends State<JelajahScreen> {
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 24,
-                          crossAxisSpacing: 24,
-                          childAspectRatio: 159 / 290,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (ctx, i) {
-                            final story = filtered[i];
-                            final isRightColumn = i % 2 == 1;
-                            return Padding(
-                              padding: EdgeInsets.only(top: isRightColumn ? 32 : 0),
-                              child: _StoryCard(story: story),
-                            );
-                          },
-                          childCount: filtered.length,
-                        ),
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 24,
+                              crossAxisSpacing: 24,
+                              childAspectRatio: 159 / 290,
+                            ),
+                        delegate: SliverChildBuilderDelegate((ctx, i) {
+                          final story = filtered[i];
+                          final isRightColumn = i % 2 == 1;
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              top: isRightColumn ? 32 : 0,
+                            ),
+                            child: _StoryCard(story: story),
+                          );
+                        }, childCount: filtered.length),
                       ),
                     ),
                   const SliverToBoxAdapter(child: SizedBox(height: 40)),
@@ -160,7 +175,11 @@ class _SearchBar extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 20),
-          Icon(Icons.search, color: const Color(0xFF00743B).withOpacity(0.6), size: 22),
+          Icon(
+            Icons.search,
+            color: const Color(0xFF00743B).withValues(alpha: 0.6),
+            size: 22,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -168,7 +187,7 @@ class _SearchBar extends StatelessWidget {
               style: GoogleFonts.beVietnamPro(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF64655C).withOpacity(0.5),
+                color: const Color(0xFF64655C).withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -205,8 +224,10 @@ class _CategoryChips extends StatelessWidget {
               onTap: () => onSelected(i),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isActive
                       ? const Color(0xFF00743B)
@@ -215,12 +236,16 @@ class _CategoryChips extends StatelessWidget {
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF00743B).withOpacity(0.2),
+                            color: const Color(
+                              0xFF00743B,
+                            ).withValues(alpha: 0.2),
                             blurRadius: 15,
                             offset: const Offset(0, 10),
                           ),
                           BoxShadow(
-                            color: const Color(0xFF00743B).withOpacity(0.2),
+                            color: const Color(
+                              0xFF00743B,
+                            ).withValues(alpha: 0.2),
                             blurRadius: 6,
                             offset: const Offset(0, 4),
                           ),
@@ -231,11 +256,8 @@ class _CategoryChips extends StatelessWidget {
                   categories[i],
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    fontWeight:
-                        isActive ? FontWeight.w700 : FontWeight.w600,
-                    color: isActive
-                        ? Colors.white
-                        : const Color(0xFF004B74),
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                    color: isActive ? Colors.white : const Color(0xFF004B74),
                   ),
                 ),
               ),
@@ -268,100 +290,102 @@ class _StoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        // Image with category badge
-        Stack(
-          children: [
-            Container(
-              height: 212,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(48),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF064E3B).withOpacity(0.1),
-                    blurRadius: 50,
-                    spreadRadius: -12,
-                    offset: const Offset(0, 25),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(48),
-                child: story.imagePath.startsWith('http')
-                    ? Image.network(
-                        story.imagePath,
-                        width: double.infinity,
-                        height: 212,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.image_not_supported_rounded),
-                      )
-                    : Image.asset(
-                        story.imagePath,
-                        width: double.infinity,
-                        height: 212,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-            ),
-            // Category badge
-            Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: story.categoryColor,
-                  borderRadius: BorderRadius.circular(9999),
-                ),
-                child: Text(
-                  story.category,
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: story.categoryTextColor,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 11),
-        // Title + subtitle
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Image with category badge
+          Stack(
             children: [
-              Text(
-                story.title,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF373830),
-                  height: 1.25,
+              Container(
+                height: 212,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(48),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF064E3B).withValues(alpha: 0.1),
+                      blurRadius: 50,
+                      spreadRadius: -12,
+                      offset: const Offset(0, 25),
+                    ),
+                  ],
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(48),
+                  child: story.imagePath.startsWith('http')
+                      ? Image.network(
+                          story.imagePath,
+                          width: double.infinity,
+                          height: 212,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.image_not_supported_rounded),
+                        )
+                      : Image.asset(
+                          story.imagePath,
+                          width: double.infinity,
+                          height: 212,
+                          fit: BoxFit.cover,
+                        ),
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                story.subtitle,
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF64655C),
-                  height: 1.43,
+              // Category badge
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: story.categoryColor,
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Text(
+                    story.category,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: story.categoryTextColor,
+                    ),
+                  ),
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
-        ),
-      ],
-    ),
+          const SizedBox(height: 11),
+          // Title + subtitle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  story.title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF373830),
+                    height: 1.25,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  story.subtitle,
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF64655C),
+                    height: 1.43,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -384,7 +408,7 @@ class _MissionCard extends StatelessWidget {
               width: 128,
               height: 128,
               decoration: BoxDecoration(
-                color: const Color(0xFF00743B).withOpacity(0.1),
+                color: const Color(0xFF00743B).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -393,7 +417,7 @@ class _MissionCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(32, 40, 32, 32),
             decoration: BoxDecoration(
-              color: const Color(0xFF75F39C).withOpacity(0.2),
+              color: const Color(0xFF75F39C).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(48),
             ),
             child: Column(
@@ -413,7 +437,7 @@ class _MissionCard extends StatelessWidget {
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xFF065F46).withOpacity(0.7),
+                    color: const Color(0xFF065F46).withValues(alpha: 0.7),
                     height: 1.43,
                   ),
                 ),
@@ -427,7 +451,7 @@ class _MissionCard extends StatelessWidget {
                     Container(
                       height: 12,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(9999),
                       ),
                     ),
@@ -455,7 +479,7 @@ class _MissionCard extends StatelessWidget {
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 15,
                               offset: const Offset(0, 10),
                             ),
@@ -486,10 +510,10 @@ class _TopAppBar extends StatelessWidget {
       right: 0,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF064E3B).withOpacity(0.05),
+              color: const Color(0xFF064E3B).withValues(alpha: 0.05),
               blurRadius: 25,
               spreadRadius: -5,
               offset: const Offset(0, 20),
@@ -514,7 +538,9 @@ class _TopAppBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF064E3B).withOpacity(0.05),
+                            color: const Color(
+                              0xFF064E3B,
+                            ).withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -526,7 +552,10 @@ class _TopAppBar extends StatelessWidget {
                           'https://res.cloudinary.com/dau1ypcyi/image/upload/v1781789690/kisantara_assets/ndu35jwh5w810tnlgvru.png',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                              Image.asset(
+                                'assets/images/logo.png',
+                                fit: BoxFit.cover,
+                              ),
                         ),
                       ),
                     ),
@@ -555,9 +584,7 @@ class _TopAppBar extends StatelessWidget {
                   child: Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
                     child: ClipOval(
                       child: Builder(
                         builder: (context) {
@@ -570,19 +597,21 @@ class _TopAppBar extends StatelessWidget {
                             );
                           }
                           return StreamBuilder<UserModel?>(
-                            stream: authService.getUserProfileStream(currentUser.uid),
+                            stream: authService.getUserProfileStream(
+                              currentUser.uid,
+                            ),
                             builder: (context, snapshot) {
                               final photoUrl = snapshot.data?.photoUrl;
                               if (photoUrl != null && photoUrl.isNotEmpty) {
-                                  return Image.network(
-                                    photoUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Image.asset(
-                                          'assets/images/user_avatar.png',
-                                          fit: BoxFit.cover,
-                                        ),
-                                  );
+                                return Image.network(
+                                  photoUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Image.asset(
+                                        'assets/images/user_avatar.png',
+                                        fit: BoxFit.cover,
+                                      ),
+                                );
                               }
                               return Image.asset(
                                 'assets/images/user_avatar.png',
@@ -595,7 +624,6 @@ class _TopAppBar extends StatelessWidget {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),

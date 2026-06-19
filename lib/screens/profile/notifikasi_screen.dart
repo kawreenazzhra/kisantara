@@ -24,7 +24,10 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF064E3B)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF064E3B),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -53,7 +56,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
             onChanged: (val) => setState(() => _newStoryEmail = val),
           ),
           const SizedBox(height: 24),
-          
+
           _buildSectionHeader('Pembaruan & Promo'),
           _buildSwitchTile(
             title: 'Pembaruan Aplikasi',
@@ -108,15 +111,15 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF064E3B).withOpacity(0.05),
+            color: const Color(0xFF064E3B).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: SwitchListTile(
-        activeColor: const Color(0xFF00743B),
-        activeTrackColor: const Color(0xFF75F39C).withOpacity(0.3),
+        activeThumbColor: const Color(0xFF00743B),
+        activeTrackColor: const Color(0xFF75F39C).withValues(alpha: 0.3),
         inactiveThumbColor: const Color(0xFFB4B4B4),
         inactiveTrackColor: const Color(0xFFE5E7EB),
         title: Text(

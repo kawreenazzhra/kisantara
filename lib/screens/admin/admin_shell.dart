@@ -29,7 +29,9 @@ class _AdminShellState extends State<AdminShell> {
         title: Text(
           'Keluar dari Admin?',
           style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w800, color: const Color(0xFF065F46)),
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF065F46),
+          ),
         ),
         content: Text(
           'Anda akan kembali ke halaman login.',
@@ -38,8 +40,12 @@ class _AdminShellState extends State<AdminShell> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal',
-                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64655C))),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.plusJakartaSans(
+                color: const Color(0xFF64655C),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -51,11 +57,17 @@ class _AdminShellState extends State<AdminShell> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text('Keluar',
-                style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(
+              'Keluar',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -71,15 +83,13 @@ class _AdminShellState extends State<AdminShell> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: const Color(0xFF064E3B).withOpacity(0.08),
+        shadowColor: const Color(0xFF064E3B).withValues(alpha: 0.08),
         title: Row(
           children: [
             Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
@@ -113,11 +123,11 @@ class _AdminShellState extends State<AdminShell> {
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFECFDF5).withOpacity(0.95),
+          color: const Color(0xFFECFDF5).withValues(alpha: 0.95),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00743B).withOpacity(0.08),
+              color: const Color(0xFF00743B).withValues(alpha: 0.08),
               blurRadius: 32,
               offset: const Offset(0, -6),
             ),
@@ -188,7 +198,7 @@ class _AdminNavItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFFA7F3D0).withOpacity(0.5)
+              ? const Color(0xFFA7F3D0).withValues(alpha: 0.5)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(9999),
         ),
@@ -199,7 +209,7 @@ class _AdminNavItem extends StatelessWidget {
               isActive ? activeIcon : icon,
               color: isActive
                   ? const Color(0xFF047857)
-                  : const Color(0xFF059669).withOpacity(0.7),
+                  : const Color(0xFF059669).withValues(alpha: 0.7),
               size: 22,
             ),
             const SizedBox(height: 2),
@@ -210,7 +220,7 @@ class _AdminNavItem extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: isActive
                     ? const Color(0xFF064E3B)
-                    : const Color(0xFF059669).withOpacity(0.7),
+                    : const Color(0xFF059669).withValues(alpha: 0.7),
               ),
             ),
           ],
