@@ -18,6 +18,8 @@ class StoryModel {
   // Status: 'approved' | 'pending' | 'rejected'
   // Admin stories are immediately approved; user stories start as 'pending'
   final String status;
+  final String language;
+  final String originalId;
 
   const StoryModel({
     required this.id,
@@ -34,12 +36,15 @@ class StoryModel {
     required this.authorName,
     required this.timestamp,
     this.status = 'approved',
+    this.language = 'Bahasa Indonesia',
+    this.originalId = '',
   });
 
   bool get isPending => status == 'pending';
   bool get isApproved => status == 'approved';
   bool get isRejected => status == 'rejected';
   bool get isAdminStory => authorId == 'admin';
+  String get canonicalId => originalId.isNotEmpty ? originalId : id;
 
   // Getter for Category Color matching the UI design
   Color get categoryColor {
@@ -91,6 +96,8 @@ class StoryModel {
       authorName: data['authorName'] ?? 'Anonim',
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       status: data['status'] ?? 'approved',
+      language: data['language'] ?? 'Bahasa Indonesia',
+      originalId: data['originalId'] ?? '',
     );
   }
 
@@ -111,6 +118,8 @@ class StoryModel {
       authorName: data['authorName'] ?? 'Anonim',
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       status: data['status'] ?? 'approved',
+      language: data['language'] ?? 'Bahasa Indonesia',
+      originalId: data['originalId'] ?? '',
     );
   }
 
@@ -130,6 +139,8 @@ class StoryModel {
       'authorName': authorName,
       'timestamp': Timestamp.fromDate(timestamp),
       'status': status,
+      'language': language,
+      'originalId': originalId,
     };
   }
 }

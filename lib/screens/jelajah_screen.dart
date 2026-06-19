@@ -6,9 +6,12 @@ import '../services/database_service.dart';
 import '../models/story_model.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
+import '../utils/localization.dart';
+import '../services/notification_service.dart';
+import 'profile/notifikasi_screen.dart';
 
-final List<String> _categories = [
-  'Semua',
+final List<String> _categoryKeys = [
+  'semua',
   'Mitos',
   'Legenda',
   'Fabel',
@@ -24,12 +27,26 @@ class JelajahScreen extends StatefulWidget {
 
 class _JelajahScreenState extends State<JelajahScreen> {
   int _selectedCategory = 0;
+  String _searchQuery = '';
   final DatabaseService _databaseService = DatabaseService();
 
   List<StoryModel> _filterStories(List<StoryModel> stories) {
-    if (_selectedCategory == 0) return stories;
-    final cat = _categories[_selectedCategory].toUpperCase();
-    return stories.where((s) => s.category.toUpperCase() == cat).toList();
+    var result = stories;
+    // Filter by category
+    if (_selectedCategory != 0) {
+      final cat = _categoryKeys[_selectedCategory].toUpperCase();
+      result = result.where((s) => s.category.toUpperCase() == cat).toList();
+    }
+    // Filter by search query
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result
+          .where((s) =>
+              s.title.toLowerCase().contains(q) ||
+              s.subtitle.toLowerCase().contains(q))
+          .toList();
+    }
+    return result;
   }
 
   @override
@@ -49,11 +66,15 @@ class _JelajahScreenState extends State<JelajahScreen> {
               ),
             ),
           ),
-          StreamBuilder<List<StoryModel>>(
-            stream: _databaseService.getStories(),
-            builder: (context, snapshot) {
-              final stories = snapshot.data ?? [];
-              final filtered = _filterStories(stories);
+          // ValueListenableBuilder ensures stories reload whenever language changes
+          ValueListenableBuilder<String>(
+            valueListenable: AppLocalizations.currentLanguageNotifier,
+            builder: (context, currentLanguage, _) {
+              return StreamBuilder<List<StoryModel>>(
+                stream: _databaseService.getStories(language: currentLanguage),
+                builder: (context, snapshot) {
+                  final stories = snapshot.data ?? [];
+                  final filtered = _filterStories(stories);
 
               return CustomScrollView(
                 slivers: [
@@ -70,10 +91,19 @@ class _JelajahScreenState extends State<JelajahScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _SearchBar(),
+                          _SearchBar(
+                            query: _searchQuery,
+                            onChanged: (q) => setState(() => _searchQuery = q),
+                            placeholder: AppLocalizations.translate('cari_cerita_ajaib'),
+                          ),
                           const SizedBox(height: 24),
                           _CategoryChips(
-                            categories: _categories,
+                            categories: _categoryKeys.map((key) {
+                              if (key == 'semua') {
+                                return AppLocalizations.translate(key);
+                              }
+                              return key;
+                            }).toList(),
                             selected: _selectedCategory,
                             onSelected: (i) =>
                                 setState(() => _selectedCategory = i),
@@ -105,7 +135,7 @@ class _JelajahScreenState extends State<JelajahScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Belum ada cerita.',
+                              AppLocalizations.translate('belum_ada_cerita'),
                               style: GoogleFonts.plusJakartaSans(
                                 color: const Color(0xFF64655C),
                               ),
@@ -143,15 +173,20 @@ class _JelajahScreenState extends State<JelajahScreen> {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _MissionCard(),
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: AppLocalizations.currentLanguageNotifier,
+                        builder: (context, _, _lang) => _MissionCard(),
+                      ),
                     ),
                   ),
                   // Bottom nav padding
                   const SliverToBoxAdapter(child: SizedBox(height: 120)),
                 ],
               );
-            },
-          ),
+                }, // end StreamBuilder builder
+              ); // end StreamBuilder
+            }, // end ValueListenableBuilder builder
+          ), // end ValueListenableBuilder
           // Top App Bar
           _TopAppBar(),
         ],
@@ -163,7 +198,45 @@ class _JelajahScreenState extends State<JelajahScreen> {
 // ─────────────────────────────────────────────
 // Search Bar
 // ─────────────────────────────────────────────
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
+  final String query;
+  final ValueChanged<String> onChanged;
+  final String placeholder;
+
+  const _SearchBar({
+    required this.query,
+    required this.onChanged,
+    required this.placeholder,
+  });
+
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.query);
+  }
+
+  @override
+  void didUpdateWidget(_SearchBar old) {
+    super.didUpdateWidget(old);
+    // Sync controller if external query was cleared
+    if (old.query != widget.query && widget.query.isEmpty && _controller.text.isNotEmpty) {
+      _controller.clear();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -182,15 +255,44 @@ class _SearchBar extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              'Cari cerita ajaib...',
+            child: TextField(
+              controller: _controller,
+              onChanged: widget.onChanged,
               style: GoogleFonts.beVietnamPro(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF64655C).withValues(alpha: 0.5),
+                color: const Color(0xFF373830),
               ),
+              decoration: InputDecoration(
+                hintText: widget.placeholder,
+                hintStyle: GoogleFonts.beVietnamPro(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF64655C).withValues(alpha: 0.5),
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              textInputAction: TextInputAction.search,
             ),
           ),
+          // Clear button
+          if (_controller.text.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _controller.clear();
+                widget.onChanged('');
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: const Color(0xFF64655C).withValues(alpha: 0.6),
+                  size: 20,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -424,7 +526,7 @@ class _MissionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Misi Membaca',
+                  AppLocalizations.translate('misi_membaca'),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -433,7 +535,7 @@ class _MissionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Selesaikan 2 cerita lagi untuk lencana baru!',
+                  AppLocalizations.translate('selesaikan_cerita_lencana'),
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -571,56 +673,59 @@ class _TopAppBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                // Right: Avatar
+                // Right: Notifications
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const EditProfilScreen(),
+                        builder: (context) => const NotifikasiScreen(),
                       ),
                     );
                   },
                   child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(shape: BoxShape.circle),
-                    child: ClipOval(
-                      child: Builder(
-                        builder: (context) {
-                          final authService = AuthService();
-                          final currentUser = authService.currentUser;
-                          if (currentUser == null) {
-                            return Image.asset(
-                              'assets/images/user_avatar.png',
-                              fit: BoxFit.cover,
-                            );
-                          }
-                          return StreamBuilder<UserModel?>(
-                            stream: authService.getUserProfileStream(
-                              currentUser.uid,
-                            ),
-                            builder: (context, snapshot) {
-                              final photoUrl = snapshot.data?.photoUrl;
-                              if (photoUrl != null && photoUrl.isNotEmpty) {
-                                return Image.network(
-                                  photoUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Image.asset(
-                                        'assets/images/user_avatar.png',
-                                        fit: BoxFit.cover,
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Builder(
+                      builder: (context) {
+                        final notificationService = NotificationService();
+                        return StreamBuilder<int>(
+                          stream: notificationService.getUnreadNotificationsCount(),
+                          builder: (context, snapshot) {
+                            final unreadCount = snapshot.data ?? 0;
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.notifications_rounded,
+                                  color: Color(0xFF00743B),
+                                  size: 24,
+                                ),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
                                       ),
-                                );
-                              }
-                              return Image.asset(
-                                'assets/images/user_avatar.png',
-                                fit: BoxFit.cover,
-                              );
-                            },
-                          );
-                        },
-                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 10,
+                                        minHeight: 10,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
                 ),

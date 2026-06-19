@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../utils/translation_script.dart';
+import '../profile/notifikasi_screen.dart';
+import '../../services/notification_service.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -18,6 +21,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _totalRead = 0;
   int _pendingStories = 0;
   List<Map<String, dynamic>> _recentActivities = [];
+  final NotificationService _notificationService = NotificationService();
 
   StreamSubscription? _storiesSubscription;
   StreamSubscription? _usersSubscription;
@@ -41,6 +45,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       for (var doc in storiesSnapshot.docs) {
         final data = doc.data();
+        final originalId = data['originalId'] ?? '';
+        if (originalId.toString().isNotEmpty) continue; // Skip translation duplicates
+
         final status = data['status'] ?? 'approved';
         if (status == 'approved') {
           approvedCount++;
@@ -183,12 +190,73 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.refresh_rounded,
-                        color: Color(0xFF00743B),
-                      ),
-                      onPressed: _handleRefresh,
+                    Row(
+                      children: [
+                        StreamBuilder<int>(
+                          stream: _notificationService.getUnreadNotificationsCount(),
+                          builder: (context, snapshot) {
+                            final unreadCount = snapshot.data ?? 0;
+                            return Stack(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.notifications_rounded,
+                                    color: Color(0xFF00743B),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const NotifikasiScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 8,
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.translate_rounded,
+                            color: Color(0xFF00743B),
+                          ),
+                          onPressed: () async {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Menjalankan script terjemahan...')),
+                            );
+                            await TranslationScript.runAutomatedTranslation();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Terjemahan selesai!')),
+                              );
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.refresh_rounded,
+                            color: Color(0xFF00743B),
+                          ),
+                          onPressed: _handleRefresh,
+                        ),
+                      ],
                     ),
                   ],
                 ),

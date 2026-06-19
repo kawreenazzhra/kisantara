@@ -5,6 +5,7 @@ import 'write_story_screen.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../models/story_model.dart';
+import '../utils/localization.dart';
 
 class CeritaSayaScreen extends StatefulWidget {
   const CeritaSayaScreen({super.key});
@@ -24,21 +25,21 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Hapus Cerita?',
+          AppLocalizations.translate('hapus_cerita'),
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.w800,
             color: const Color(0xFF065F46),
           ),
         ),
         content: Text(
-          'Apakah Anda yakin ingin menghapus "$storyTitle"? Cerita yang dihapus tidak dapat dipulihkan.',
+          AppLocalizations.translate('yakin_hapus'),
           style: GoogleFonts.beVietnamPro(color: const Color(0xFF64655C)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Batal',
+              AppLocalizations.translate('batal'),
               style: GoogleFonts.plusJakartaSans(
                 color: const Color(0xFF64655C),
               ),
@@ -52,7 +53,7 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Cerita berhasil dihapus.',
+                      AppLocalizations.translate('cerita_berhasil_dihapus'),
                       style: GoogleFonts.plusJakartaSans(),
                     ),
                     backgroundColor: const Color(0xFFDC2626),
@@ -71,7 +72,7 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
               ),
             ),
             child: Text(
-              'Hapus',
+              AppLocalizations.translate('hapus'),
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -85,164 +86,174 @@ class _CeritaSayaScreenState extends State<CeritaSayaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = _authService.currentUser;
-    if (user == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFFEFDF1),
-        body: Center(child: Text('Silakan login terlebih dahulu.')),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDF1),
-      floatingActionButton: _selectedTab == 2
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const WriteStoryScreen(),
-                  ),
-                );
-              },
-              backgroundColor: const Color(0xFF00743B),
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.edit_note_rounded),
-              label: Text(
-                'Tulis Cerita',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            )
-          : null,
-      floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+    // ValueListenableBuilder ensures all translated labels rebuild when language changes
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocalizations.currentLanguageNotifier,
+      builder: (context, _, _lang) {
+        final user = _authService.currentUser;
+        if (user == null) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFFEFDF1),
+            body: Center(
               child: Text(
-                'Cerita Saya',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF065F46),
-                  letterSpacing: -0.6,
-                ),
+                AppLocalizations.translate('silakan_login_dahulu'),
               ),
             ),
-            // Custom Tabs
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _TabItem(
-                      title: 'Disimpan',
-                      isSelected: _selectedTab == 0,
-                      onTap: () => setState(() => _selectedTab = 0),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFFEFDF1),
+          floatingActionButton: _selectedTab == 2
+              ? FloatingActionButton.extended(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WriteStoryScreen(),
+                      ),
+                    );
+                  },
+                  backgroundColor: const Color(0xFF00743B),
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.edit_note_rounded),
+                  label: Text(
+                    AppLocalizations.translate('tulis_cerita'),
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                )
+              : null,
+          floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  child: Text(
+                    AppLocalizations.translate('cerita_saya'),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF065F46),
+                      letterSpacing: -0.6,
                     ),
-                    const SizedBox(width: 12),
-                    _TabItem(
-                      title: 'Terakhir Dibaca',
-                      isSelected: _selectedTab == 1,
-                      onTap: () => setState(() => _selectedTab = 1),
-                    ),
-                    const SizedBox(width: 12),
-                    _TabItem(
-                      title: 'Tulisan Saya',
-                      isSelected: _selectedTab == 2,
-                      onTap: () => setState(() => _selectedTab = 2),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // List of Stories from Firestore
-            Expanded(
-              child: StreamBuilder<List<StoryModel>>(
-                stream: _selectedTab == 0
-                    ? _databaseService.getBookmarkedStories(user.uid)
-                    : _selectedTab == 1
-                    ? _databaseService.getRecentlyReadStories(user.uid)
-                    : _databaseService.getUserStories(user.uid),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF00743B),
-                      ),
-                    );
-                  }
-
-                  final listToShow = snapshot.data ?? [];
-                  if (listToShow.isEmpty) {
-                    String emptyText = 'Belum ada cerita disimpan.';
-                    IconData emptyIcon = Icons.bookmark_border_rounded;
-                    if (_selectedTab == 1) {
-                      emptyText = 'Belum ada riwayat membaca.';
-                      emptyIcon = Icons.history_rounded;
-                    } else if (_selectedTab == 2) {
-                      emptyText = 'Anda belum menulis cerita apapun.';
-                      emptyIcon = Icons.draw_rounded;
-                    }
-
-                    return Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            emptyIcon,
-                            size: 64,
-                            color: const Color(0xFFBABAAF),
+                // Custom Tabs
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _TabItem(
+                          title: AppLocalizations.translate('disimpan'),
+                          isSelected: _selectedTab == 0,
+                          onTap: () => setState(() => _selectedTab = 0),
+                        ),
+                        const SizedBox(width: 12),
+                        _TabItem(
+                          title: AppLocalizations.translate('terakhir_dibaca'),
+                          isSelected: _selectedTab == 1,
+                          onTap: () => setState(() => _selectedTab = 1),
+                        ),
+                        const SizedBox(width: 12),
+                        _TabItem(
+                          title: AppLocalizations.translate('tulisan_saya'),
+                          isSelected: _selectedTab == 2,
+                          onTap: () => setState(() => _selectedTab = 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // List of Stories from Firestore
+                Expanded(
+                  child: StreamBuilder<List<StoryModel>>(
+                    stream: _selectedTab == 0
+                        ? _databaseService.getBookmarkedStories(user.uid, language: AppLocalizations.currentLanguage)
+                        : _selectedTab == 1
+                        ? _databaseService.getRecentlyReadStories(user.uid, language: AppLocalizations.currentLanguage)
+                        : _databaseService.getUserStories(user.uid),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF00743B),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            emptyText,
-                            style: GoogleFonts.plusJakartaSans(
-                              color: const Color(0xFF64655C),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                        );
+                      }
 
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
-                    itemCount: listToShow.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final story = listToShow[index];
-                      return _StoryListTile(
-                        story: story,
-                        isOwnWork: _selectedTab == 2,
-                        onDelete: () => _deleteStory(story.id, story.title),
-                        onEdit: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  WriteStoryScreen(editStory: story),
-                            ),
+                      final listToShow = snapshot.data ?? [];
+                      if (listToShow.isEmpty) {
+                        String emptyText = AppLocalizations.translate('belum_ada_cerita_disimpan');
+                        IconData emptyIcon = Icons.bookmark_border_rounded;
+                        if (_selectedTab == 1) {
+                          emptyText = AppLocalizations.translate('belum_ada_riwayat');
+                          emptyIcon = Icons.history_rounded;
+                        } else if (_selectedTab == 2) {
+                          emptyText = AppLocalizations.translate('belum_ada_tulisan');
+                          emptyIcon = Icons.draw_rounded;
+                        }
+
+                        return Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                emptyIcon,
+                                size: 64,
+                                color: const Color(0xFFBABAAF),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                emptyText,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFF64655C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
+                        itemCount: listToShow.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final story = listToShow[index];
+                          return _StoryListTile(
+                            story: story,
+                            isOwnWork: _selectedTab == 2,
+                            onDelete: () => _deleteStory(story.id, story.title),
+                            onEdit: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      WriteStoryScreen(editStory: story),
+                                ),
+                              );
+                            },
                           );
                         },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

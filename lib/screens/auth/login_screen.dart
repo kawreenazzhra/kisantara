@@ -4,6 +4,7 @@ import '../../main.dart'; // To access HomeShell
 import '../admin/admin_shell.dart'; // To access AdminShell
 import 'register_screen.dart';
 import '../../services/auth_service.dart';
+import '../../utils/localization.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,17 +59,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (uid != null) {
         final profile = await _authService.getUserProfile(uid);
         if (profile != null) {
+          // Apply language preference immediately so UI reflects the correct language
+          if (profile.language.isNotEmpty) {
+            AppLocalizations.changeLanguage(profile.language);
+          }
           if (profile.role == 'admin') {
+            if (!mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const AdminShell()),
             );
           } else {
+            if (!mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HomeShell()),
             );
           }
         } else {
           // If no profile found in Firestore (should not happen, but fallback)
+          if (!mounted) return;
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const HomeShell()),
           );
@@ -82,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (e.toString().contains('wrong-password')) {
         errorMsg = 'Kata sandi salah.';
       }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg, style: GoogleFonts.plusJakartaSans()),

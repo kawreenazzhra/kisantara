@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../main.dart'; // To access HomeShell
 import '../../services/auth_service.dart';
 import 'login_screen.dart';
 

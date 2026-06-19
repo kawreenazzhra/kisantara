@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import '../../services/auth_service.dart';
-import '../../models/user_model.dart';
 import '../../services/storage_service.dart';
+import '../../utils/localization.dart';
 
 class EditProfilScreen extends StatefulWidget {
   const EditProfilScreen({super.key});
@@ -68,7 +68,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gagal memilih gambar: $e',
+              '${AppLocalizations.translate('gagal_pilih_gambar')}: $e',
               style: GoogleFonts.plusJakartaSans(),
             ),
             backgroundColor: const Color(0xFFDC2626),
@@ -111,7 +111,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Profil berhasil diperbarui!',
+                AppLocalizations.translate('profil_diperbarui'),
                 style: GoogleFonts.plusJakartaSans(),
               ),
               backgroundColor: const Color(0xFF00743B),
@@ -124,7 +124,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Gagal memperbarui profil: $e',
+                '${AppLocalizations.translate('gagal_perbarui_profil')}: $e',
                 style: GoogleFonts.plusJakartaSans(),
               ),
               backgroundColor: const Color(0xFFDC2626),
@@ -151,143 +151,148 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDF1),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFEFDF1),
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF064E3B),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Edit Profil',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF064E3B),
-            fontSize: 18,
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF00743B)),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Profile Picture Section
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: _imageBytes != null
-                                ? Image.memory(_imageBytes!, fit: BoxFit.cover)
-                                : (_currentPhotoUrl.isNotEmpty
-                                      ? Image.network(
-                                          _currentPhotoUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) => Image.asset(
-                                                'assets/images/user_avatar.png',
-                                                fit: BoxFit.cover,
-                                              ),
-                                        )
-                                      : Image.asset(
-                                          'assets/images/user_avatar.png',
-                                          fit: BoxFit.cover,
-                                        )),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF00743B),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Name Input
-                  _buildInputField(
-                    label: 'Nama Lengkap (Nama Pena)',
-                    controller: _nameController,
-                    hint: 'Masukkan nama lengkap',
-                    icon: Icons.person_outline_rounded,
-                  ),
-
-                  // Email Input (Read only)
-                  _buildInputField(
-                    label: 'Email',
-                    controller: _emailController,
-                    hint: 'Masukkan email',
-                    icon: Icons.email_outlined,
-                    enabled: false,
-                  ),
-
-                  // Bio Input
-                  _buildInputField(
-                    label: 'Bio',
-                    controller: _bioController,
-                    hint: 'Tulis sedikit tentang kamu',
-                    icon: Icons.info_outline_rounded,
-                    maxLines: 3,
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // Save Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00743B),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Simpan Perubahan',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocalizations.currentLanguageNotifier,
+      builder: (context, currentLanguage, _) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFFEFDF1),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFFEFDF1),
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF064E3B),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.translate('edit_profil'),
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF064E3B),
+                fontSize: 18,
               ),
             ),
+          ),
+          body: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF00743B)),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Profile Picture Section
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              child: ClipOval(
+                                child: _imageBytes != null
+                                    ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                                    : (_currentPhotoUrl.isNotEmpty
+                                          ? Image.network(
+                                              _currentPhotoUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => Image.asset(
+                                                    'assets/images/user_avatar.png',
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                            )
+                                          : Image.asset(
+                                              'assets/images/user_avatar.png',
+                                              fit: BoxFit.cover,
+                                            )),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF00743B),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Name Input
+                      _buildInputField(
+                        label: AppLocalizations.translate('nama_lengkap'),
+                        controller: _nameController,
+                        hint: AppLocalizations.translate('masukkan_nama'),
+                        icon: Icons.person_outline_rounded,
+                      ),
+
+                      // Email Input (Read only)
+                      _buildInputField(
+                        label: AppLocalizations.translate('email_notif_cerita'),
+                        controller: _emailController,
+                        hint: AppLocalizations.translate('masukkan_email'),
+                        icon: Icons.email_outlined,
+                        enabled: false,
+                      ),
+
+                      // Bio Input
+                      _buildInputField(
+                        label: AppLocalizations.translate('bio'),
+                        controller: _bioController,
+                        hint: AppLocalizations.translate('tulis_tentang_kamu'),
+                        icon: Icons.info_outline_rounded,
+                        maxLines: 3,
+                      ),
+
+                      const SizedBox(height: 48),
+
+                      // Save Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00743B),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            AppLocalizations.translate('simpan_perubahan'),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+        );
+      },
     );
   }
 

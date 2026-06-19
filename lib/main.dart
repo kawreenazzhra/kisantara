@@ -8,6 +8,7 @@ import 'screens/auth/login_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'utils/localization.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,18 +27,23 @@ class KisantaraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kisantara',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00743B),
-          surface: const Color(0xFFFEFDF1),
-        ),
-        textTheme: GoogleFonts.plusJakartaSansTextTheme(),
-      ),
-      home: const LoginScreen(), // Entry point: Login → User or Admin
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocalizations.currentLanguageNotifier,
+      builder: (context, lang, child) {
+        return MaterialApp(
+          title: 'Kisantara',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF00743B),
+              surface: const Color(0xFFFEFDF1),
+            ),
+            textTheme: GoogleFonts.plusJakartaSansTextTheme(),
+          ),
+          home: const LoginScreen(), // Entry point: Login → User or Admin
+        );
+      },
     );
   }
 }
@@ -52,27 +58,38 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
 
-  static const _screens = [JelajahScreen(), CeritaSayaScreen(), ProfilScreen()];
+  // Build screens dynamically (not const) so they rebuild when language changes
+  List<Widget> get _screens => [
+    const JelajahScreen(),
+    const CeritaSayaScreen(),
+    const ProfilScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDF1),
-      body: Stack(
-        children: [
-          _screens[_currentIndex],
-          // Bottom Navigation Bar
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _BottomNav(
-              currentIndex: _currentIndex,
-              onTap: (i) => setState(() => _currentIndex = i),
-            ),
+    // ValueListenableBuilder ensures all child screens rebuild on language change
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocalizations.currentLanguageNotifier,
+      builder: (context, _, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFFEFDF1),
+          body: Stack(
+            children: [
+              _screens[_currentIndex],
+              // Bottom Navigation Bar
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _BottomNav(
+                  currentIndex: _currentIndex,
+                  onTap: (i) => setState(() => _currentIndex = i),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -110,21 +127,21 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.explore_rounded,
                 activeIcon: Icons.explore_rounded,
-                label: 'Jelajah',
+                label: AppLocalizations.translate('beranda'),
                 isActive: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _NavItem(
                 icon: Icons.menu_book_outlined,
                 activeIcon: Icons.menu_book_rounded,
-                label: 'Cerita Saya',
+                label: AppLocalizations.translate('cerita_saya'),
                 isActive: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
                 activeIcon: Icons.person_rounded,
-                label: 'Profil',
+                label: AppLocalizations.translate('profil'),
                 isActive: currentIndex == 2,
                 onTap: () => onTap(2),
               ),
