@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'membaca_cerita_screen.dart';
-import 'profile/edit_profil_screen.dart';
 import '../services/database_service.dart';
 import '../models/story_model.dart';
-import '../services/auth_service.dart';
-import '../models/user_model.dart';
 import '../utils/localization.dart';
 import '../services/notification_service.dart';
 import 'profile/notifikasi_screen.dart';
@@ -143,26 +140,50 @@ class _JelajahScreenState extends State<JelajahScreen> {
                     )
                   else
                     // Stories grid
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 24,
-                              crossAxisSpacing: 24,
-                              childAspectRatio: 159 / 290,
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left Column
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: List.generate(
+                                  (filtered.length / 2).ceil(),
+                                  (index) {
+                                    final story = filtered[index * 2];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 24),
+                                      child: _StoryCard(story: story),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                        delegate: SliverChildBuilderDelegate((ctx, i) {
-                          final story = filtered[i];
-                          final isRightColumn = i % 2 == 1;
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              top: isRightColumn ? 32 : 0,
+                            const SizedBox(width: 24),
+                            // Right Column
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 32),
+                                  ...List.generate(
+                                    filtered.length ~/ 2,
+                                    (index) {
+                                      final story = filtered[index * 2 + 1];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 24),
+                                        child: _StoryCard(story: story),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: _StoryCard(story: story),
-                          );
-                        }, childCount: filtered.length),
+                          ],
+                        ),
                       ),
                     ),
                   const SliverToBoxAdapter(child: SizedBox(height: 40)),
@@ -172,7 +193,7 @@ class _JelajahScreenState extends State<JelajahScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: ValueListenableBuilder<String>(
                         valueListenable: AppLocalizations.currentLanguageNotifier,
-                        builder: (context, _, _lang) => _MissionCard(),
+                        builder: (context, _, lang) => _MissionCard(),
                       ),
                     ),
                   ),
@@ -392,36 +413,36 @@ class _StoryCard extends StatelessWidget {
           // Image with category badge
           Stack(
             children: [
-              Container(
-                height: 212,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(48),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF064E3B).withValues(alpha: 0.1),
-                      blurRadius: 50,
-                      spreadRadius: -12,
-                      offset: const Offset(0, 25),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(48),
-                  child: story.imagePath.startsWith('http')
-                      ? Image.network(
-                          story.imagePath,
-                          width: double.infinity,
-                          height: 212,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported_rounded),
-                        )
-                      : Image.asset(
-                          story.imagePath,
-                          width: double.infinity,
-                          height: 212,
-                          fit: BoxFit.cover,
-                        ),
+              AspectRatio(
+                aspectRatio: 159 / 212,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(48),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF064E3B).withValues(alpha: 0.1),
+                        blurRadius: 50,
+                        spreadRadius: -12,
+                        offset: const Offset(0, 25),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(48),
+                    child: story.imagePath.startsWith('http')
+                        ? Image.network(
+                            story.imagePath,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image_not_supported_rounded),
+                          )
+                        : Image.asset(
+                            story.imagePath,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
                 ),
               ),
               // Category badge

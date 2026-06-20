@@ -165,31 +165,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Row(
+                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Dasbor Admin',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF065F46),
-                            letterSpacing: -0.5,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dasbor Admin',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF065F46),
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Pantau aktivitas & konten Kisantara.',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 14,
-                            color: const Color(0xFF64655C),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Pantau aktivitas & konten Kisantara.',
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 14,
+                              color: const Color(0xFF64655C),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     Row(
                       children: [
                         StreamBuilder<int>(

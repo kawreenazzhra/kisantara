@@ -821,7 +821,10 @@ class _AllStoriesTab extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -841,7 +844,6 @@ class _AllStoriesTab extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
                             // Status badge
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -861,7 +863,6 @@ class _AllStoriesTab extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
                             Text(
                               dateStr,
                               style: GoogleFonts.beVietnamPro(
