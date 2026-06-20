@@ -4,10 +4,10 @@ Kisantara adalah sebuah aplikasi mobile yang dibangun menggunakan framework **Fl
 
 <br>
 <p align="center">
-  <img width="220" alt="Screenshot 1" src="https://github.com/user-attachments/assets/d2921ff0-55d2-47ed-a331-cea15940636a" />
-  <img width="220" alt="Screenshot 2" src="https://github.com/user-attachments/assets/d6c11036-3b35-4b59-8410-a31972b9ae13" />
-  <img width="220" alt="Screenshot 3" src="https://github.com/user-attachments/assets/10dd8717-3c15-439b-983a-c9fd1cf03e0c" />
-  <img width="220" alt="Screenshot 4" src="https://github.com/user-attachments/assets/5895124c-0ce7-47bd-b1fe-94d2f84b8de0" />
+  <img width="24%" alt="Screenshot 1" src="https://github.com/user-attachments/assets/d2921ff0-55d2-47ed-a331-cea15940636a" />
+  <img width="24%" alt="Screenshot 2" src="https://github.com/user-attachments/assets/d6c11036-3b35-4b59-8410-a31972b9ae13" />
+  <img width="24%" alt="Screenshot 3" src="https://github.com/user-attachments/assets/10dd8717-3c15-439b-983a-c9fd1cf03e0c" />
+  <img width="24%" alt="Screenshot 4" src="https://github.com/user-attachments/assets/5895124c-0ce7-47bd-b1fe-94d2f84b8de0" />
 </p>
 <br>
 
