@@ -35,7 +35,7 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
 
   void _loadScrollPosition() async {
     final prefs = await SharedPreferences.getInstance();
-    final offset = prefs.getDouble('scroll_${widget.story.id}') ?? 0.0;
+    final offset = prefs.getDouble('scroll_${widget.story.canonicalId}') ?? 0.0;
     if (offset > 0.0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
@@ -47,7 +47,7 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
 
   void _saveScrollPosition(double offset) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('scroll_${widget.story.id}', offset);
+    await prefs.setDouble('scroll_${widget.story.canonicalId}', offset);
   }
 
   void _recordRecentRead() async {
@@ -85,12 +85,20 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
-    final story = widget.story;
 
     return ValueListenableBuilder<String>(
       valueListenable: AppLocalizations.currentLanguageNotifier,
       builder: (context, currentLanguage, _) {
-        return Scaffold(
+        return StreamBuilder<StoryModel>(
+          stream: _databaseService.getStoryByCanonicalIdStream(
+            widget.story.canonicalId,
+            fallbackStory: widget.story,
+            language: currentLanguage,
+          ),
+          initialData: widget.story,
+          builder: (context, snapshot) {
+            final story = snapshot.data ?? widget.story;
+            return Scaffold(
           backgroundColor: const Color(0xFFFEFDF1),
           body: Stack(
             children: [
@@ -613,6 +621,8 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
               ),
             ],
           ),
+        );
+          },
         );
       },
     );

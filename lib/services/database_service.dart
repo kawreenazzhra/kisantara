@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:translator/translator.dart';
 import '../models/story_model.dart';
 import '../models/user_model.dart';
 import '../services/notification_service.dart';
@@ -12,26 +13,43 @@ class DatabaseService {
   // ─────────────────────────────────────────────
 
   /// Stream all APPROVED stories from Firestore for a specific language (newest first).
-  /// Falls back to Bahasa Indonesia stories if none exist for the selected language.
+  /// Maps original stories to their translations if available, otherwise falls back to the original.
   Stream<List<StoryModel>> getStories({String language = 'Bahasa Indonesia'}) {
     return _db
         .collection('stories')
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
       final all = snapshot.docs.map((doc) => StoryModel.fromFirestore(doc)).toList();
       // Only approved stories
       final allApproved = all.where((s) => s.isApproved).toList();
 
-      // Filter by requested language (legacy docs without language field default to Bahasa Indonesia)
-      var langFiltered = allApproved.where((s) => s.language == language).toList();
+      // Original stories are those with empty originalId
+      final originalStories = allApproved.where((s) => s.originalId.isEmpty).toList();
 
-      // Fallback: if no stories in selected language, show Bahasa Indonesia stories
-      if (langFiltered.isEmpty && language != 'Bahasa Indonesia') {
-        langFiltered = allApproved.where((s) => s.language == 'Bahasa Indonesia').toList();
+      if (language == 'Bahasa Indonesia') {
+        originalStories.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        return originalStories;
       }
 
-      langFiltered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      return langFiltered;
+      // Filter translations for the requested language
+      final translations = allApproved.where((s) => s.originalId.isNotEmpty && s.language == language).toList();
+
+      final mappedList = <StoryModel>[];
+      for (final story in originalStories) {
+        final translation = translations.cast<StoryModel?>().firstWhere(
+          (s) => s?.originalId == story.id,
+          orElse: () => null,
+        );
+        if (translation != null) {
+          mappedList.add(translation);
+        } else {
+          final translated = await translateStoryOnTheFly(story, language);
+          mappedList.add(translated);
+        }
+      }
+
+      mappedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return mappedList;
     });
   }
 
@@ -216,7 +234,8 @@ class DatabaseService {
           if (translation != null) {
             mappedList.add(translation);
           } else {
-            mappedList.add(story);
+            final translated = await translateStoryOnTheFly(story, language);
+            mappedList.add(translated);
           }
         }
       }
@@ -312,11 +331,118 @@ class DatabaseService {
           if (translation != null) {
             mappedList.add(translation);
           } else {
-            mappedList.add(story);
+            final translated = await translateStoryOnTheFly(story, language);
+            mappedList.add(translated);
           }
         }
       }
       return mappedList;
     });
+  }
+
+  /// Stream a single approved story mapped to the selected language, falling back to the original version.
+  Stream<StoryModel> getStoryByCanonicalIdStream(
+    String canonicalId, {
+    required StoryModel fallbackStory,
+    String language = 'Bahasa Indonesia',
+  }) {
+    return _db
+        .collection('stories')
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final all = snapshot.docs.map((doc) => StoryModel.fromFirestore(doc)).toList();
+      final allApproved = all.where((s) => s.isApproved).toList();
+
+      if (language == 'Bahasa Indonesia') {
+        return allApproved.cast<StoryModel?>().firstWhere(
+          (s) => s?.canonicalId == canonicalId && s?.originalId.isEmpty == true,
+          orElse: () => allApproved.cast<StoryModel?>().firstWhere(
+            (s) => s?.canonicalId == canonicalId,
+            orElse: () => fallbackStory,
+          ),
+        ) ?? fallbackStory;
+      }
+
+      final translation = allApproved.cast<StoryModel?>().firstWhere(
+        (s) => s?.canonicalId == canonicalId && s?.language == language,
+        orElse: () => null,
+      );
+
+      if (translation != null) {
+        return translation;
+      }
+
+      // Fallback: return the original story
+      final original = allApproved.cast<StoryModel?>().firstWhere(
+        (s) => s?.canonicalId == canonicalId && s?.originalId.isEmpty == true,
+        orElse: () => allApproved.cast<StoryModel?>().firstWhere(
+          (s) => s?.canonicalId == canonicalId,
+          orElse: () => fallbackStory,
+        ),
+      ) ?? fallbackStory;
+
+      return await translateStoryOnTheFly(original, language);
+    });
+  }
+
+  String _getLanguageCode(String languageName) {
+    switch (languageName) {
+      case 'English':
+        return 'en';
+      case 'Jawa':
+        return 'jv';
+      case 'Sunda':
+        return 'su';
+      case 'Bahasa Indonesia':
+      default:
+        return 'id';
+    }
+  }
+
+  Future<StoryModel> translateStoryOnTheFly(StoryModel story, String targetLanguage) async {
+    if (story.language == targetLanguage) {
+      return story;
+    }
+
+    final targetCode = _getLanguageCode(targetLanguage);
+    final sourceCode = _getLanguageCode(story.language);
+
+    if (targetCode == sourceCode) {
+      return story;
+    }
+
+    try {
+      final translator = GoogleTranslator();
+
+      final futures = await Future.wait([
+        story.title.isNotEmpty ? translator.translate(story.title, from: sourceCode, to: targetCode) : Future.value(null),
+        story.subtitle.isNotEmpty ? translator.translate(story.subtitle, from: sourceCode, to: targetCode) : Future.value(null),
+        story.part1.isNotEmpty ? translator.translate(story.part1, from: sourceCode, to: targetCode) : Future.value(null),
+        story.part2.isNotEmpty ? translator.translate(story.part2, from: sourceCode, to: targetCode) : Future.value(null),
+        story.quote.isNotEmpty ? translator.translate(story.quote, from: sourceCode, to: targetCode) : Future.value(null),
+      ]);
+
+      return StoryModel(
+        id: story.id,
+        title: futures[0] != null ? (futures[0] as Translation).text : story.title,
+        subtitle: futures[1] != null ? (futures[1] as Translation).text : story.subtitle,
+        imagePath: story.imagePath,
+        category: story.category,
+        readTime: story.readTime,
+        part1: futures[2] != null ? (futures[2] as Translation).text : story.part1,
+        quote: futures[4] != null ? (futures[4] as Translation).text : story.quote,
+        quoteAuthor: story.quoteAuthor,
+        part2: futures[3] != null ? (futures[3] as Translation).text : story.part2,
+        authorId: story.authorId,
+        authorName: story.authorName,
+        timestamp: story.timestamp,
+        status: story.status,
+        language: targetLanguage,
+        originalId: story.originalId.isNotEmpty ? story.originalId : story.id,
+      );
+    } catch (e) {
+      print('Error during dynamic translation: $e');
+      return story;
+    }
   }
 }
