@@ -1,17 +1,55 @@
-# kisantara
+# Kisantara
 
-A new Flutter project.
+Kisantara adalah sebuah aplikasi mobile yang dibangun menggunakan framework **Flutter**. Aplikasi ini berfokus pada eksplorasi cerita, menyediakan pengalaman pengguna yang modern dan responsif dengan fitur penjelajahan konten, cerita pengguna, dan profil.
 
-## Getting Started
+## 🌟 Fitur Utama
+- **Autentikasi Aman**: Login dan manajemen pengguna yang didukung oleh **Firebase Authentication**.
+- **Jelajah & Cerita Saya**: Eksplorasi dan manajemen cerita secara dinamis menggunakan **Cloud Firestore**.
+- **Desain Modern**: Antarmuka bersih yang menggunakan **Material 3** dipadukan dengan tipografi **Plus Jakarta Sans** (Google Fonts).
+- **Multibahasa**: Mendukung terjemahan teks secara dinamis menggunakan paket `translator`.
+- **Manajemen Media**: Mendukung pemilihan dan pengunggahan gambar menggunakan `image_picker`.
+- **Penyimpanan Lokal**: Menyimpan preferensi dan status pengguna (seperti pilihan bahasa) dengan `shared_preferences`.
 
-This project is a starting point for a Flutter application.
+## 🛠️ Teknologi yang Digunakan
+- **Frontend**: [Flutter](https://flutter.dev/) (Dart)
+- **Backend/BaaS**: Firebase (Firebase Core, Auth, Cloud Firestore)
+- **Networking**: Dio
+- **UI/UX**: Google Fonts, Cupertino Icons
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Persiapan & Instalasi
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Prasyarat
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (versi 3.11.0 atau lebih baru)
+- Android Studio / VS Code dengan plugin Flutter
+- Perangkat Android/iOS atau Emulator/Simulator
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Langkah-langkah
+1. **Clone repositori ini** ke mesin lokal Anda.
+   ```bash
+   git clone https://github.com/kawreenazzhra/kisantara.git
+   ```
+2. **Masuk ke direktori project**:
+   ```bash
+   cd kisantara
+   ```
+3. **Unduh semua dependensi**:
+   ```bash
+   flutter pub get
+   ```
+4. **Jalankan aplikasi**:
+   Sambungkan perangkat Anda atau jalankan emulator, lalu eksekusi:
+   ```bash
+   flutter run
+   ```
+
+## 📦 Membangun Rilis (Build APK)
+Jika Anda ingin menghasilkan file `.apk` untuk dibagikan atau diinstal di perangkat Android, Anda bisa menjalankan perintah berikut:
+
+```bash
+flutter build apk
+```
+Setelah proses selesai, file APK siap pakai dapat ditemukan di dalam direktori:
+`build/app/outputs/flutter-apk/app-release.apk`
+
+---
+*Dibuat untuk project Tugas Besar Aplikasi Perangkat Bergerak (APB).*
