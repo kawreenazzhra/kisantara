@@ -395,7 +395,7 @@ class _StoryListTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(9999),
                     ),
                     child: Text(
-                      story.category,
+                      AppLocalizations.translate(story.category.toLowerCase()).toUpperCase(),
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

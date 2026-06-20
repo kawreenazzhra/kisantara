@@ -60,12 +60,18 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
   void _toggleBookmark() async {
     final user = _authService.currentUser;
     if (user != null) {
+      final isCurrentlyBookmarked = await _databaseService.isStoryBookmarked(user.uid, widget.story).first;
       await _databaseService.toggleBookmark(user.uid, widget.story);
       if (mounted) {
+        final snackBarText = isCurrentlyBookmarked
+            ? AppLocalizations.translate('batal_menyimpan_cerita_notif')
+            : AppLocalizations.translate('berhasil_menyimpan_cerita_notif');
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.translate('status_simpan_diperbarui'),
+              snackBarText,
               style: GoogleFonts.plusJakartaSans(),
             ),
             backgroundColor: const Color(0xFF00743B),
@@ -192,7 +198,7 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                                           borderRadius: BorderRadius.circular(9999),
                                         ),
                                         child: Text(
-                                          story.category,
+                                          AppLocalizations.translate(story.category.toLowerCase()).toUpperCase(),
                                           style: GoogleFonts.plusJakartaSans(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,

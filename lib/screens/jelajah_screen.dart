@@ -99,10 +99,7 @@ class _JelajahScreenState extends State<JelajahScreen> {
                           const SizedBox(height: 24),
                           _CategoryChips(
                             categories: _categoryKeys.map((key) {
-                              if (key == 'semua') {
-                                return AppLocalizations.translate(key);
-                              }
-                              return key;
+                              return AppLocalizations.translate(key.toLowerCase());
                             }).toList(),
                             selected: _selectedCategory,
                             onSelected: (i) =>
@@ -441,7 +438,7 @@ class _StoryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(9999),
                   ),
                   child: Text(
-                    story.category,
+                    AppLocalizations.translate(story.category.toLowerCase()).toUpperCase(),
                     style: GoogleFonts.beVietnamPro(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,

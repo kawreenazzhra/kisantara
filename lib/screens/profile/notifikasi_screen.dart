@@ -45,7 +45,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.delete_sweep_rounded, color: Colors.red),
-                tooltip: 'Hapus Semua',
+                tooltip: AppLocalizations.translate('hapus_semua'),
                 onPressed: () => _showDeleteAllDialog(context),
               ),
             ],
@@ -173,7 +173,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          notif.title,
+                          _getTranslatedTitle(notif),
                           style: GoogleFonts.plusJakartaSans(
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF064E3B),
@@ -194,7 +194,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    notif.message,
+                    _getTranslatedMessage(notif),
                     style: GoogleFonts.beVietnamPro(
                       color: const Color(0xFF64655C),
                       fontSize: 13,
@@ -220,7 +220,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                             GestureDetector(
                               onTap: () => _notificationService.markAsRead(notif.id),
                               child: Text(
-                                'Mark as read',
+                                AppLocalizations.translate('tandai_dibaca'),
                                 style: GoogleFonts.beVietnamPro(
                                   color: const Color(0xFF00743B),
                                   fontSize: 11,
@@ -232,7 +232,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                           GestureDetector(
                             onTap: () => _notificationService.deleteNotification(notif.id),
                             child: Text(
-                              'Hapus',
+                              AppLocalizations.translate('hapus'),
                               style: GoogleFonts.beVietnamPro(
                                 color: Colors.red,
                                 fontSize: 11,
@@ -253,16 +253,59 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     );
   }
 
+  String _getTranslatedTitle(NotificationModel notif) {
+    switch (notif.type) {
+      case 'approval':
+        return AppLocalizations.translate('notif_title_approval');
+      case 'new_story_admin':
+        return AppLocalizations.translate('notif_title_new_story_admin');
+      case 'new_story_user':
+        return AppLocalizations.translate('notif_title_new_story_user');
+      case 'pending_story':
+        return AppLocalizations.translate('notif_title_pending_story');
+      default:
+        return notif.title;
+    }
+  }
+
+  String _getTranslatedMessage(NotificationModel notif) {
+    switch (notif.type) {
+      case 'approval':
+        return AppLocalizations.translate('notif_message_approval')
+            .replaceAll('{title}', notif.storyTitle ?? '');
+      case 'new_story_admin':
+        if (notif.category != null) {
+          final translatedCat = AppLocalizations.translate(notif.category!.toLowerCase());
+          return AppLocalizations.translate('notif_message_new_story_admin_with_category')
+              .replaceAll('{title}', notif.storyTitle ?? '')
+              .replaceAll('{category}', translatedCat);
+        } else {
+          return AppLocalizations.translate('notif_message_new_story_admin')
+              .replaceAll('{title}', notif.storyTitle ?? '');
+        }
+      case 'new_story_user':
+        return AppLocalizations.translate('notif_message_new_story_user')
+            .replaceAll('{author}', notif.authorName ?? '')
+            .replaceAll('{title}', notif.storyTitle ?? '');
+      case 'pending_story':
+        return AppLocalizations.translate('notif_message_pending_story')
+            .replaceAll('{author}', notif.authorName ?? '')
+            .replaceAll('{title}', notif.storyTitle ?? '');
+      default:
+        return notif.message;
+    }
+  }
+
   String _formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inHours < 1) {
-      return '${difference.inMinutes} menit lalu';
+      return '${difference.inMinutes} ${AppLocalizations.translate('menit_lalu')}';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} jam lalu';
+      return '${difference.inHours} ${AppLocalizations.translate('jam_lalu')}';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} hari lalu';
+      return '${difference.inDays} ${AppLocalizations.translate('hari_lalu')}';
     } else {
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     }
@@ -288,14 +331,14 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFFFEFDF1),
         title: Text(
-          'Hapus Semua Notifikasi?',
+          AppLocalizations.translate('hapus_semua_notifikasi'),
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.w700,
             color: const Color(0xFF064E3B),
           ),
         ),
         content: Text(
-          'Semua notifikasi Anda akan dihapus secara permanen.',
+          AppLocalizations.translate('yakin_hapus_semua_notif'),
           style: GoogleFonts.beVietnamPro(
             color: const Color(0xFF64655C),
           ),
@@ -304,7 +347,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Batal',
+              AppLocalizations.translate('batal'),
               style: GoogleFonts.plusJakartaSans(
                 color: const Color(0xFF64655C),
                 fontWeight: FontWeight.w600,
@@ -317,7 +360,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               _notificationService.deleteAllNotifications();
             },
             child: Text(
-              'Hapus',
+              AppLocalizations.translate('hapus'),
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.red,
                 fontWeight: FontWeight.w700,

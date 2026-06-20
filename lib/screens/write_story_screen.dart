@@ -5,6 +5,7 @@ import '../services/content_filter_service.dart';
 import '../services/database_service.dart';
 import '../services/storage_service.dart';
 import '../models/story_model.dart';
+import '../utils/localization.dart';
 
 class WriteStoryScreen extends StatefulWidget {
   final StoryModel? editStory; // Optional, in case they want to edit their story
@@ -378,7 +379,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                     const SizedBox(height: 20),
 
                     // ── Kategori ──
-                    _sectionLabel('Kategori'),
+                    _sectionLabel(AppLocalizations.translate('kategori')),
                     const SizedBox(height: 10),
                     Row(
                       children: _categories.map((cat) {
@@ -399,7 +400,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                                 ),
                               ),
                               child: Text(
-                                cat,
+                                AppLocalizations.translate(cat.toLowerCase()).toUpperCase(),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 13,

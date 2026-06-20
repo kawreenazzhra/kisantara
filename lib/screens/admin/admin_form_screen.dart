@@ -4,6 +4,7 @@ import '../../services/content_filter_service.dart';
 import '../../services/database_service.dart';
 import '../../services/storage_service.dart';
 import '../../models/story_model.dart';
+import '../../utils/localization.dart';
 
 class AdminFormScreen extends StatefulWidget {
   final StoryModel? editStory;
@@ -358,7 +359,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
               const SizedBox(height: 24),
 
               // ── Kategori ──
-              _sectionLabel('Kategori'),
+              _sectionLabel(AppLocalizations.translate('kategori')),
               const SizedBox(height: 10),
               Row(
                 children: _categories.map((cat) {
@@ -379,7 +380,7 @@ class _AdminFormScreenState extends State<AdminFormScreen> {
                           ),
                         ),
                         child: Text(
-                          cat,
+                          AppLocalizations.translate(cat.toLowerCase()).toUpperCase(),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
