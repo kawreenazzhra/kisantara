@@ -225,7 +225,7 @@ class _MembacaCeritaScreenState extends State<MembacaCeritaScreen> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            story.readTime,
+                                            AppLocalizations.getLocalizedReadTime(story.readTime),
                                             style: GoogleFonts.beVietnamPro(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,

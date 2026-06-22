@@ -427,7 +427,7 @@ class _StoryListTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(9999),
                       ),
                       child: Text(
-                        '⏳ Menunggu persetujuan admin',
+                        AppLocalizations.translate('tunggu_persetujuan'),
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -446,7 +446,7 @@ class _StoryListTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(9999),
                       ),
                       child: Text(
-                        '❌ Ditolak oleh admin',
+                        AppLocalizations.translate('ditolak_admin'),
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -463,7 +463,7 @@ class _StoryListTile extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        story.readTime,
+                        AppLocalizations.getLocalizedReadTime(story.readTime),
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 12,
                           color: const Color(0xFF64655C),

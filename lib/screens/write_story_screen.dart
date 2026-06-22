@@ -94,7 +94,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Gambar berhasil diunggah! 🎉',
+              AppLocalizations.translate('upload_success'),
               style: GoogleFonts.plusJakartaSans(),
             ),
             backgroundColor: const Color(0xFF00743B),
@@ -107,7 +107,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal mengunggah gambar: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text('${AppLocalizations.translate('upload_failed')}: $e', style: GoogleFonts.plusJakartaSans()),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -126,7 +126,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Tulis judul cerita terlebih dahulu agar AI tahu apa yang ingin digambar!', style: GoogleFonts.plusJakartaSans()),
+          content: Text(AppLocalizations.translate('write_title_first'), style: GoogleFonts.plusJakartaSans()),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -151,7 +151,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cover AI berhasil dibuat dan diunggah! 🎉', style: GoogleFonts.plusJakartaSans()),
+            content: Text(AppLocalizations.translate('ai_cover_success'), style: GoogleFonts.plusJakartaSans()),
             backgroundColor: const Color(0xFF00743B),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -162,7 +162,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal membuat Cover AI: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text('${AppLocalizations.translate('ai_cover_failed')}: $e', style: GoogleFonts.plusJakartaSans()),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -188,7 +188,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
     if (title.isEmpty || subtitle.isEmpty || part1.isEmpty || part2.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Judul, subjudul, dan isi cerita harus diisi!', style: GoogleFonts.plusJakartaSans()),
+          content: Text(AppLocalizations.translate('fields_required'), style: GoogleFonts.plusJakartaSans()),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -225,7 +225,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
 
     try {
       final user = _authService.currentUser;
-      if (user == null) throw Exception('User tidak terautentikasi.');
+      if (user == null) throw Exception(AppLocalizations.translate('user_unauthenticated'));
 
       if (widget.editStory != null) {
         // Edit existing story
@@ -244,7 +244,10 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Cerita "$title" berhasil diperbarui!', style: GoogleFonts.plusJakartaSans()),
+              content: Text(
+                AppLocalizations.translate('story_updated').replaceAll('{title}', title),
+                style: GoogleFonts.plusJakartaSans(),
+              ),
               backgroundColor: const Color(0xFF00743B),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -276,7 +279,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Cerita "$title" berhasil dikirim! ✨ Menunggu persetujuan admin.',
+                AppLocalizations.translate('story_submitted').replaceAll('{title}', title),
                 style: GoogleFonts.plusJakartaSans(),
               ),
               backgroundColor: const Color(0xFF00743B),
@@ -295,7 +298,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal menyimpan cerita: $e', style: GoogleFonts.plusJakartaSans()),
+            content: Text('${AppLocalizations.translate('save_story_failed')}: $e', style: GoogleFonts.plusJakartaSans()),
             backgroundColor: const Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -312,370 +315,380 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.editStory != null;
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDF1),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF065F46)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          isEditing ? 'Edit Cerita Anda' : 'Tulis Cerita Baru',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF065F46),
-            fontSize: 20,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocalizations.currentLanguageNotifier,
+      builder: (context, currentLanguage, _) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFFEFDF1),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF065F46)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              isEditing
+                  ? AppLocalizations.translate('edit_cerita_anda')
+                  : AppLocalizations.translate('tulis_cerita_baru'),
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF065F46),
+                fontSize: 20,
+              ),
+            ),
           ),
-        ),
-      ),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF00743B),
-                ),
-              )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bagikan Petualanganmu!',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF065F46),
-                        letterSpacing: -0.5,
-                      ),
+          body: SafeArea(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF00743B),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Tulis cerita rakyat, fabel, atau legenda versimu sendiri sebagai $_authorName.',
-                      style: GoogleFonts.beVietnamPro(fontSize: 14, color: const Color(0xFF64655C)),
-                    ),
-                    const SizedBox(height: 28),
-
-                    // ── Judul ──
-                    _sectionLabel('Judul Cerita'),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      controller: _titleController,
-                      hint: 'Contoh: Kisah Si Kancil yang Cerdik',
-                      icon: Icons.title_rounded,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Subjudul ──
-                    _sectionLabel('Subjudul Cerita'),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      controller: _subtitleController,
-                      hint: 'Contoh: Dongeng Si Kecil Penyelamat Hutan',
-                      icon: Icons.subtitles_rounded,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Kategori ──
-                    _sectionLabel(AppLocalizations.translate('kategori')),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: _categories.map((cat) {
-                        final isSelected = _selectedCategory == cat;
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedCategory = cat),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              margin: EdgeInsets.only(right: cat != _categories.last ? 10 : 0),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF00743B) : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected ? const Color(0xFF00743B) : const Color(0xFFE5E7EB),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Text(
-                                AppLocalizations.translate(cat.toLowerCase()).toUpperCase(),
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? Colors.white : const Color(0xFF64655C),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Cover Image ──
-                    _sectionLabel('Gambar Sampul Cerita'),
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      controller: _imageUrlController,
-                      hint: 'Masukkan URL Gambar (opsional)',
-                      icon: Icons.link_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Text(
-                        'ATAU',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _generateAICover,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              decoration: BoxDecoration(
-                                color: _uploadedImageUrl != null && _uploadedImageUrl!.contains('pollinations')
-                                    ? const Color(0xFFD1FAE5)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _uploadedImageUrl != null && _uploadedImageUrl!.contains('pollinations')
-                                      ? const Color(0xFF059669)
-                                      : const Color(0xFFD1D5DB),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Icon(
-                                    Icons.auto_awesome_rounded,
-                                    size: 32,
-                                    color: Color(0xFF059669),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Generate dengan AI',
-                                    style: GoogleFonts.beVietnamPro(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF047857),
+                        Text(
+                          AppLocalizations.translate('bagikan_petualanganmu'),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF065F46),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.translate('tulis_cerita_deskripsi')
+                              .replaceAll('{author}', _authorName),
+                          style: GoogleFonts.beVietnamPro(fontSize: 14, color: const Color(0xFF64655C)),
+                        ),
+                        const SizedBox(height: 28),
+
+                        // ── Judul ──
+                        _sectionLabel(AppLocalizations.translate('judul_cerita')),
+                        const SizedBox(height: 10),
+                        _buildTextField(
+                          controller: _titleController,
+                          hint: AppLocalizations.translate('hint_judul_cerita'),
+                          icon: Icons.title_rounded,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── Subjudul ──
+                        _sectionLabel(AppLocalizations.translate('subjudul_cerita')),
+                        const SizedBox(height: 10),
+                        _buildTextField(
+                          controller: _subtitleController,
+                          hint: AppLocalizations.translate('hint_subjudul'),
+                          icon: Icons.subtitles_rounded,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── Kategori ──
+                        _sectionLabel(AppLocalizations.translate('kategori')),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: _categories.map((cat) {
+                            final isSelected = _selectedCategory == cat;
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _selectedCategory = cat),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  margin: EdgeInsets.only(right: cat != _categories.last ? 10 : 0),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFF00743B) : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected ? const Color(0xFF00743B) : const Color(0xFFE5E7EB),
+                                      width: 1.5,
                                     ),
                                   ),
-                                ],
+                                  child: Text(
+                                    AppLocalizations.translate(cat.toLowerCase()).toUpperCase(),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected ? Colors.white : const Color(0xFF64655C),
+                                    ),
+                                  ),
+                                ),
                               ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // ── Cover Image ──
+                        _sectionLabel(AppLocalizations.translate('gambar_sampul')),
+                        const SizedBox(height: 10),
+                        _buildTextField(
+                          controller: _imageUrlController,
+                          hint: AppLocalizations.translate('hint_url_gambar'),
+                          icon: Icons.link_rounded,
+                        ),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: Text(
+                            AppLocalizations.translate('atau'),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                              color: const Color(0xFF9CA3AF),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _pickAndUpload,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              decoration: BoxDecoration(
-                                color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                    ? const Color(0xFFC6F6D5)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                      ? const Color(0xFF00743B)
-                                      : const Color(0xFFD1D5DB),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                        ? Icons.check_circle_rounded
-                                        : Icons.cloud_upload_rounded,
-                                    size: 32,
-                                    color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                        ? const Color(0xFF00743B)
-                                        : const Color(0xFF9CA3AF),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                        ? 'Gambar dipilih ✓'
-                                        : 'Unggah Gambar',
-                                    style: GoogleFonts.beVietnamPro(
-                                      fontSize: 13,
-                                      color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                          ? const Color(0xFF065F46)
-                                          : const Color(0xFF9CA3AF),
-                                      fontWeight: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _generateAICover,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  decoration: BoxDecoration(
+                                    color: _uploadedImageUrl != null && _uploadedImageUrl!.contains('pollinations')
+                                        ? const Color(0xFFD1FAE5)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: _uploadedImageUrl != null && _uploadedImageUrl!.contains('pollinations')
+                                          ? const Color(0xFF059669)
+                                          : const Color(0xFFD1D5DB),
+                                      width: 2,
                                     ),
                                   ),
-                                ],
+                                  child: Column(
+                                    children: [
+                                      const Icon(
+                                        Icons.auto_awesome_rounded,
+                                        size: 32,
+                                        color: Color(0xFF059669),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        AppLocalizations.translate('generate_ai'),
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF047857),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _pickAndUpload,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  decoration: BoxDecoration(
+                                    color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                        ? const Color(0xFFC6F6D5)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                          ? const Color(0xFF00743B)
+                                          : const Color(0xFFD1D5DB),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                            ? Icons.check_circle_rounded
+                                            : Icons.cloud_upload_rounded,
+                                        size: 32,
+                                        color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                            ? const Color(0xFF00743B)
+                                            : const Color(0xFF9CA3AF),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                            ? AppLocalizations.translate('gambar_dipilih')
+                                            : AppLocalizations.translate('unggah_gambar'),
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 13,
+                                          color: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                              ? const Color(0xFF065F46)
+                                              : const Color(0xFF9CA3AF),
+                                          fontWeight: _simulatedImageName != null && !_simulatedImageName!.contains('AI')
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 14),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFDE68A),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.info_outline_rounded,
+                                color: Color(0xFFD97706),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.translate('ai_disclaimer'),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFFB45309),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_uploadedImageUrl != null && _uploadedImageUrl!.startsWith('http')) ...[
+                          const SizedBox(height: 16),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  AppLocalizations.translate('preview_cover'),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF065F46),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.network(
+                                    _uploadedImageUrl!,
+                                    width: 160,
+                                    height: 160,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        width: 160,
+                                        height: 160,
+                                        color: const Color(0xFFECECEC),
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Color(0xFF00743B),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+
+                        // ── Kutipan Favorit (Opsional) ──
+                        _buildQuoteToggle(),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                          child: _showQuote
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    _sectionLabel(AppLocalizations.translate('kutipan_favorit')),
+                                    const SizedBox(height: 10),
+                                    _buildTextField(
+                                      controller: _quoteController,
+                                      hint: AppLocalizations.translate('hint_kutipan'),
+                                      icon: Icons.format_quote_rounded,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _sectionLabel(AppLocalizations.translate('tokoh_kutipan')),
+                                    const SizedBox(height: 10),
+                                    _buildTextField(
+                                      controller: _quoteAuthorController,
+                                      hint: AppLocalizations.translate('hint_tokoh_kutipan'),
+                                      icon: Icons.person_outline_rounded,
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // ── Isi Bagian 1 ──
+                        _sectionLabel(AppLocalizations.translate('isi_bagian1')),
+                        const SizedBox(height: 10),
+                        _buildTextArea(
+                          controller: _part1Controller,
+                          hint: AppLocalizations.translate('hint_isi_bagian1'),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // ── Isi Bagian 2 ──
+                        _sectionLabel(AppLocalizations.translate('isi_bagian2')),
+                        const SizedBox(height: 10),
+                        _buildTextArea(
+                          controller: _part2Controller,
+                          hint: AppLocalizations.translate('hint_isi_bagian2'),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // ── Simpan ──
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _submit,
+                            icon: const Icon(Icons.send_rounded),
+                            label: Text(
+                              isEditing
+                                  ? AppLocalizations.translate('simpan_perubahan_btn')
+                                  : AppLocalizations.translate('publikasikan_cerita'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00743B),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                              elevation: 4,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 14),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFBEB),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFFDE68A),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.info_outline_rounded,
-                            color: Color(0xFFD97706),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              '* Mohon maaf jika gambar yang dihasilkan oleh AI kami tidak sesuai dengan judul Anda. Silakan unggah gambar yang dibuat sendiri agar sesuai dengan cerita yang dibuat.',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFFB45309),
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_uploadedImageUrl != null && _uploadedImageUrl!.startsWith('http')) ...[
-                      const SizedBox(height: 16),
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Preview Cover:',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF065F46),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.network(
-                                _uploadedImageUrl!,
-                                width: 160,
-                                height: 160,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    width: 160,
-                                    height: 160,
-                                    color: const Color(0xFFECECEC),
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Color(0xFF00743B),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-
-                    // ── Kutipan Favorit (Opsional) ──
-                    _buildQuoteToggle(),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      child: _showQuote
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 16),
-                                _sectionLabel('Kutipan Favorit'),
-                                const SizedBox(height: 10),
-                                _buildTextField(
-                                  controller: _quoteController,
-                                  hint: 'Contoh: Jangan pernah melupakan jasa orang tua.',
-                                  icon: Icons.format_quote_rounded,
-                                ),
-                                const SizedBox(height: 16),
-                                _sectionLabel('Tokoh Kutipan'),
-                                const SizedBox(height: 10),
-                                _buildTextField(
-                                  controller: _quoteAuthorController,
-                                  hint: 'Contoh: Malin Kundang',
-                                  icon: Icons.person_outline_rounded,
-                                ),
-                              ],
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Isi Bagian 1 ──
-                    _sectionLabel('Isi Cerita - Bagian 1'),
-                    const SizedBox(height: 10),
-                    _buildTextArea(
-                      controller: _part1Controller,
-                      hint: 'Tulis paragraf awal cerita Anda di sini...',
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Isi Bagian 2 ──
-                    _sectionLabel('Isi Cerita - Bagian 2'),
-                    const SizedBox(height: 10),
-                    _buildTextArea(
-                      controller: _part2Controller,
-                      hint: 'Tulis paragraf akhir/lanjutan cerita Anda di sini...',
-                    ),
-                    const SizedBox(height: 32),
-
-                    // ── Simpan ──
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _submit,
-                        icon: const Icon(Icons.send_rounded),
-                        label: Text(
-                          isEditing ? 'Simpan Perubahan' : 'Publikasikan Cerita',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00743B),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          elevation: 4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      ),
+                  ),
+          ),
+        );
+      },
     );
   }
 
@@ -717,7 +730,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tambah Kutipan Favorit',
+                  AppLocalizations.translate('tambah_kutipan'),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -725,7 +738,7 @@ class _WriteStoryScreenState extends State<WriteStoryScreen> {
                   ),
                 ),
                 Text(
-                  'Opsional — kalimat berkesan dari cerita ini',
+                  AppLocalizations.translate('tambah_kutipan_sub'),
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: const Color(0xFF9CA3AF),

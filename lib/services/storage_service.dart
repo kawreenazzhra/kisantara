@@ -396,19 +396,16 @@ class StorageService {
     return prompt;
   }
 
-  /// Strategi 1 & 2: Pollinations.ai — endpoint baru gen.pollinations.ai
+  /// Strategi 1 & 2: Pollinations.ai — menggunakan endpoint publik image.pollinations.ai (bebas API Key)
   /// Model gratis: gptimage (GPT Image, paling akurat), flux (Flux Schnell, cepat)
   Future<String> _generateViaPollinations(String prompt, {required String model, int? seed}) async {
     final dio = Dio();
     final encodedPrompt = Uri.encodeComponent(prompt);
     final seedParam = seed ?? DateTime.now().millisecondsSinceEpoch % 100000;
 
-    // Endpoint baru Pollinations: gen.pollinations.ai/image/{prompt}
-    // - model: gptimage (GPT Image 1 Mini) atau flux (Flux Schnell)
-    // - seed: untuk konsistensi gambar
-    // - nologo: tanpa watermark
+    // Gunakan image.pollinations.ai/prompt/ agar tidak terkena 401 Unauthorized
     final url =
-        'https://gen.pollinations.ai/image/$encodedPrompt'
+        'https://image.pollinations.ai/prompt/$encodedPrompt'
         '?width=512&height=512'
         '&seed=$seedParam'
         '&model=$model'
@@ -511,28 +508,46 @@ class StorageService {
     return await uploadBytes(bytes, fileName, 'image/jpeg');
   }
 
-  /// Strategi 4: Placeholder — selalu berhasil
-  Future<String> _generatePlaceholder() async {
+  /// Upload remote URL ke Cloudinary tanpa perlu download bytes secara lokal di device.
+  Future<String> uploadRemoteUrl(String fileUrl) async {
     final dio = Dio();
-    final seed = DateTime.now().millisecondsSinceEpoch;
-    final url = 'https://picsum.photos/seed/$seed/512/512';
-
-    final response = await dio.get(
-      url,
+    final formData = FormData.fromMap({
+      'file': fileUrl,
+      'upload_preset': _uploadPreset,
+      'folder': 'kisantara_covers',
+      'quality': 'auto',
+      'fetch_format': 'auto',
+    });
+    
+    final response = await dio.post(
+      _uploadUrl,
+      data: formData,
       options: Options(
-        responseType: ResponseType.bytes,
-        receiveTimeout: const Duration(seconds: 30),
-        followRedirects: true,
-        maxRedirects: 5,
+        sendTimeout: const Duration(seconds: 45),
+        receiveTimeout: const Duration(seconds: 45),
       ),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Placeholder gagal (${response.statusCode})');
+    if (response.statusCode == 200) {
+      final secureUrl = response.data['secure_url'] as String;
+      return secureUrl;
     }
+    throw Exception(
+      'Cloudinary remote URL upload gagal (${response.statusCode}): ${response.data}',
+    );
+  }
 
-    final bytes = Uint8List.fromList(response.data);
-    final fileName = 'placeholder_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    return await uploadBytes(bytes, fileName, 'image/jpeg');
+  /// Strategi 4: Placeholder — selalu berhasil
+  Future<String> _generatePlaceholder() async {
+    try {
+      final seed = DateTime.now().millisecondsSinceEpoch;
+      // Gunakan placehold.co yang super cepat, stabil secara global, dan tidak diblokir di Indonesia
+      final url = 'https://placehold.co/512x512/3b82f6/ffffff.png?text=Kisah+Nusantara+$seed';
+      return await uploadRemoteUrl(url);
+    } catch (e) {
+      debugPrint('[AI Cover] Upload remote placeholder gagal: $e - menggunakan link fallback Unsplash');
+      // Fallback terakhir jika Cloudinary bermasalah, return URL Unsplash langsung
+      return 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=512&q=80';
+    }
   }
 }
