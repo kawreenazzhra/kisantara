@@ -5,6 +5,8 @@ import 'screens/jelajah_screen.dart';
 import 'screens/cerita_saya_screen.dart';
 import 'screens/profil_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/admin/admin_shell.dart';
+import 'services/auth_service.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -41,12 +43,75 @@ class KisantaraApp extends StatelessWidget {
             ),
             textTheme: GoogleFonts.plusJakartaSansTextTheme(),
           ),
-          home: const LoginScreen(), // Entry point: Login → User or Admin
+          home: const AuthGate(), // Entry point: AuthGate checks active session
         );
       },
     );
   }
 }
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  final _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  void _checkAuth() async {
+    // Wait for the widgets binding to be initialized and Firebase to restore session
+    await Future.delayed(const Duration(milliseconds: 500));
+    final currentUser = _authService.currentUser;
+    if (currentUser == null) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } else {
+      final profile = await _authService.getUserProfile(currentUser.uid);
+      if (!mounted) return;
+      if (profile != null) {
+        if (profile.language.isNotEmpty) {
+          AppLocalizations.changeLanguage(profile.language);
+        }
+        if (profile.role == 'admin') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const AdminShell()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeShell()),
+          );
+        }
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeShell()),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFFFEFDF1),
+      body: Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF00743B),
+        ),
+      ),
+    );
+  }
+}
+
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});

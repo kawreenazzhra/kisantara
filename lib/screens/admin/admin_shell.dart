@@ -4,6 +4,7 @@ import '../../screens/auth/login_screen.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_form_screen.dart';
 import 'admin_manage_screen.dart';
+import '../../services/auth_service.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -48,8 +49,10 @@ class _AdminShellState extends State<AdminShell> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
+              await AuthService().signOut();
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

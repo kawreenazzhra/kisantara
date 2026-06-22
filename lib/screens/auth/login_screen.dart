@@ -42,6 +42,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (email == 'admin@admin.com' && password == 'admin123') {
+      setState(() => _isLoading = true);
+      try {
+        await _authService.signInWithEmailAndPassword(email, password);
+      } catch (e) {
+        print('Firebase Admin Auth login failed, proceeding offline: $e');
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+      if (!mounted) return;
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const AdminShell()));

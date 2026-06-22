@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
-import 'login_screen.dart';
+import '../../main.dart';
+import '../admin/admin_shell.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -66,15 +67,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         penName: penName,
       );
 
-      // Sign out immediately so user is not automatically logged in
-      await _authService.signOut();
-
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Pendaftaran berhasil! Silakan masuk dengan akun baru Anda.',
+            'Pendaftaran berhasil! Selamat datang di Kisantara.',
             style: GoogleFonts.plusJakartaSans(),
           ),
           backgroundColor: const Color(0xFF00743B),
@@ -85,11 +83,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      // Navigate to LoginScreen and clear everything
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
+      final role = (email.trim().toLowerCase() == 'admin@admin.com') ? 'admin' : 'user';
+      if (role == 'admin') {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const AdminShell()),
+          (route) => false,
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeShell()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       String errorMsg = 'Registrasi gagal. Silakan coba lagi.';
       if (e.toString().contains('email-already-in-use')) {
